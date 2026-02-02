@@ -4,6 +4,7 @@ if __name__ == "__main__":
     
     # Initialize and run OMS Filtering
     OMSfilter = OMSFiltering("DVSGesture")
-    OMSfilter.OMS_filtering()
+    OMSMap, I_filtered = OMSfilter.OMS_filtering()
+    OMSfilter.OMS_filtering_visualization(OMSMap, I_filtered)
 
     

@@ -69,6 +69,9 @@ class OMSFiltering:
         self.max_x = max_x
         self.max_y = max_y
         self.numevs = numevs
+        self.events_list = [numevs[0]]
+        self.suppressed_list = [numevs[0]]
+        self.dropped_list = [0]
         
         self.config = Config()
 
@@ -78,10 +81,6 @@ class OMSFiltering:
         net_center, net_surround = initialize_oms(self.config.DEVICE, self.config.OMS_PARAMS)
         net_attention = AttentionModule(**self.config.ATTENTION_PARAMS)
 
-        
-        events_list = [self.numevs[0]]      # total events
-        suppressed_list = [self.numevs[0]]  # fake OMS indexes sum
-        dropped_list = [0]
 
         OMS_map, indexes = compute_OMS(self.window_pos, net_center, net_surround, self.config)
 
@@ -145,51 +144,6 @@ class OMSFiltering:
         I_filtered_normalized = I_filtered / np.max(I_filtered)
         I_filtered_8bit = (I_filtered_normalized * 255).astype(np.uint8)
 
-        # ---------------------------
-        # Update Visualization
-        # ---------------------------
-        
-        # Scale components
-        scaled_height = int(self.max_y * self.scale_factor)
-        scaled_width = int(self.max_x * self.scale_factor)
-
-        background = np.ones((scaled_height, scaled_width*3, 3), dtype=np.uint8) * 255
-
-        window_pos_resized = convert_to_rgb(cv2.resize(self.window_pos, (scaled_width, scaled_height)))
-        OMS_resized = convert_to_rgb(cv2.resize(OMS_map, (scaled_width, scaled_height)))
-        graph_img_resized = cv2.resize(draw_graph_with_dots(events_list, suppressed_list, dropped_list),
-                                    (scaled_width, scaled_height))
-        
-        # We will now add the filtered map to the visualization
-        
-        # Resize the filtered image for display
-        I_filtered_resized = convert_to_rgb(cv2.resize(I_filtered_8bit, (scaled_width, scaled_height)))
-        
-        # The 'background' image needs to be wider to fit the 4th image (Event, OMS, Filtered, Graph)
-        background = np.ones((scaled_height, scaled_width*4, 3), dtype=np.uint8) * 255
-
-        # Original window_pos
-        window_pos_resized = convert_to_rgb(cv2.resize(self.window_pos, (scaled_width, scaled_height)))
-        # OMS map
-        OMS_resized = convert_to_rgb(cv2.resize(OMS_map, (scaled_width, scaled_height)))
-        # Graph
-        graph_img_resized = cv2.resize(draw_graph_with_dots(events_list, suppressed_list, dropped_list),
-                                    (scaled_width, scaled_height))
-
-    # Place images into the wide background
-        background[:, :scaled_width] = window_pos_resized
-        background[:, scaled_width:scaled_width*2] = OMS_resized
-        background[:, scaled_width*2:scaled_width*3] = I_filtered_resized  # NEW FILTERED MAP
-        background[:, scaled_width*3:] = graph_img_resized
-
-        # Update Text Labels
-        cv2.putText(background, 'Event map', (30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)
-        cv2.putText(background, 'OMS map', (scaled_width+30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)
-        cv2.putText(background, 'Filtered map', (scaled_width*2+30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2) # NEW LABEL
-
-        cv2.imshow("Visualization", background)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
 
         # ---------------------------
         # Event-level filtering using OMS Saliency
@@ -226,3 +180,52 @@ class OMSFiltering:
         print(f"Retained events  : {num_filtered_events}")
         print(f"Filtered events  : {num_suppressed_events}")
         print(f"Filtered ratio   : {num_suppressed_events / num_total_events:.2f}")
+
+        return OMS_map, I_filtered_8bit
+
+    def OMS_filtering_visualization(self, OMS_map, I_filtered_8bit):
+        # ---------------------------
+        # Update Visualization
+        # ---------------------------
+        
+        # Scale components
+        scaled_height = int(self.max_y * self.scale_factor)
+        scaled_width = int(self.max_x * self.scale_factor)
+
+        background = np.ones((scaled_height, scaled_width*3, 3), dtype=np.uint8) * 255
+
+        window_pos_resized = convert_to_rgb(cv2.resize(self.window_pos, (scaled_width, scaled_height)))
+        OMS_resized = convert_to_rgb(cv2.resize(OMS_map, (scaled_width, scaled_height)))
+        graph_img_resized = cv2.resize(draw_graph_with_dots(self.events_list, self.suppressed_list, self.dropped_list),
+                                    (scaled_width, scaled_height))
+        
+        # We will now add the filtered map to the visualization
+        
+        # Resize the filtered image for display
+        I_filtered_resized = convert_to_rgb(cv2.resize(I_filtered_8bit, (scaled_width, scaled_height)))
+        
+        # The 'background' image needs to be wider to fit the 4th image (Event, OMS, Filtered, Graph)
+        background = np.ones((scaled_height, scaled_width*4, 3), dtype=np.uint8) * 255
+
+        # Original window_pos
+        window_pos_resized = convert_to_rgb(cv2.resize(self.window_pos, (scaled_width, scaled_height)))
+        # OMS map
+        OMS_resized = convert_to_rgb(cv2.resize(OMS_map, (scaled_width, scaled_height)))
+        # Graph
+        graph_img_resized = cv2.resize(draw_graph_with_dots(self.events_list, self.suppressed_list, self.dropped_list),
+                                    (scaled_width, scaled_height))
+
+    # Place images into the wide background
+        background[:, :scaled_width] = window_pos_resized
+        background[:, scaled_width:scaled_width*2] = OMS_resized
+        background[:, scaled_width*2:scaled_width*3] = I_filtered_resized  # NEW FILTERED MAP
+        background[:, scaled_width*3:] = graph_img_resized
+
+        # Update Text Labels
+        cv2.putText(background, 'Event map', (30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)
+        cv2.putText(background, 'OMS map', (scaled_width+30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)
+        cv2.putText(background, 'Filtered map', (scaled_width*2+30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2) # NEW LABEL
+
+        cv2.imshow("Visualization", background)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
