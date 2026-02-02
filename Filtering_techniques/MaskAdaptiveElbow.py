@@ -129,6 +129,15 @@ class AdaptiveElbowOMSFiltering:
 
     def AdaptiveElbow_filtering_visualization(self, OMS_map, masked_OMS):
         
+        print("OMS map stats:", OMS_map.min(), OMS_map.max(), OMS_map.mean())
+
+        plt.figure(figsize=(6,4))
+        plt.hist(OMS_map.flatten(), bins=100, color='gray')
+        plt.title("OMS Map Value Distribution")
+        plt.xlabel("OMS intensity")
+        plt.ylabel("Number of pixels")
+        plt.show()
+
         # Scale components
         scaled_height = int(self.max_y * self.scale_factor)
         scaled_width = int(self.max_x * self.scale_factor)
@@ -137,13 +146,10 @@ class AdaptiveElbowOMSFiltering:
         window_pos_resized = convert_to_rgb(cv2.resize(self.window_pos, (scaled_width, scaled_height)))
         OMS_resized = convert_to_rgb(cv2.resize(OMS_map, (scaled_width, scaled_height)))
         Mask_resized = convert_to_rgb(cv2.resize(masked_OMS, (scaled_width, scaled_height)))
-        graph_img_resized = cv2.resize(draw_graph_with_dots(self.events_list, self.suppressed_list, self.dropped_list),
-                                    (scaled_width, scaled_height))
-
+        
         background[:, :scaled_width] = window_pos_resized
         background[:, scaled_width:scaled_width*2] = OMS_resized
         background[:, scaled_width*2:] = Mask_resized
-
 
         cv2.putText(background, 'Event map', (30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)
         cv2.putText(background, 'OMS map', (scaled_width+30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)

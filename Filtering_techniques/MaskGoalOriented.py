@@ -117,6 +117,15 @@ class MaskGoalOrientedOMSFiltering:
     
     def GoalOriented_filtering_visualization(self, OMS_map, masked_OMS):
         
+        print("OMS map stats:", OMS_map.min(), OMS_map.max(), OMS_map.mean())
+
+        plt.figure(figsize=(6,4))
+        plt.hist(OMS_map.flatten(), bins=100, color='gray')
+        plt.title("OMS Map Value Distribution")
+        plt.xlabel("OMS intensity")
+        plt.ylabel("Number of pixels")
+        plt.show()
+
         # Scale components
         scaled_height = int(self.max_y * self.scale_factor)
         scaled_width = int(self.max_x * self.scale_factor)
