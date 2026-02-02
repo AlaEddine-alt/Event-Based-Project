@@ -74,11 +74,11 @@ class AdaptiveElbowOMSFiltering:
         # OMS & Attention Initialization
 
         OMS_filter = OMSFiltering(dataset_name)
-        self.OMSMap, _ = OMS_filter.OMS_filtering()
+        self.OMS_map, _ = OMS_filter.OMS_filtering()
         
         # Adaptive Elbow Method for Thresholding
-    def adaptive_elbow_threshold(OMS_map):
-        flat = OMS_map.flatten()
+    def adaptive_elbow_threshold(self):
+        flat = self.OMS_map.flatten()
         flat = flat[flat > 0]  # remove pure zeros (common in event maps)
         
         if len(flat) < 10:
@@ -110,7 +110,7 @@ class AdaptiveElbowOMSFiltering:
     def Albowdaptive_thresholding(self):
         
         # ----- Adaptive Elbow Method Thresholding -----
-        mask, thr_value = self.adaptive_elbow_threshold(self.OMS_map)
+        mask, thr_value = self.adaptive_elbow_threshold()
 
         # Optional: apply mask to visualize
         masked_OMS = self.OMS_map * mask
