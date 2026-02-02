@@ -6,6 +6,9 @@ import tonic
 
 from functions.OMS_helpers import *
 from functions.attention_helpers import AttentionModule
+from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
+from functions.loadDatasetFunctions import load_events, reset_windows
+from functions.computeOMSFunction import compute_OMS
 
 # ---------------------------
 # Config
@@ -43,87 +46,6 @@ class Config:
         'random_init': False,
         'lif_tau': 0.3
     }
-# ---------------------------
-# Load events from file (x, y, t, p)
-# ---------------------------
-
-def load_events(dataset_name):
-
-    if dataset_name == "DSEC":
-        data = np.loadtxt('Dsec.txt')  # columns: x y t p
-        xs = data[:, 0].astype(int)
-        ys = data[:, 1].astype(int)
-        timestamps = data[:, 2]         
-        pols = data[:, 3].astype(int)
-        scale_factor = 0.75  # for DSEC   
-        
-    elif dataset_name == "DVSGesture":
-        dataset = tonic.datasets.DVSGesture(save_to="../Datasets", train=True)
-        events, target = dataset[0]
-        xs = events["x"].astype(int)
-        ys = events["y"].astype(int)
-        pols = events["p"].astype(int)
-        timestamps = events["t"]
-        scale_factor = 3 # for DVSGesture
-    else:
-        raise ValueError("Unsupported dataset")
-    
-    # Auto-resize arrays to fit your data
-    max_x = int(np.max(xs)) + 1
-    max_y = int(np.max(ys)) + 1
-
-    window_pos = np.zeros((max_y, max_x), dtype=np.uint16)
-    window_neg = np.zeros((max_y, max_x), dtype=np.uint16)
-
-    # Fill windows (accumulate events)
-    for x, y, p in zip(xs, ys, pols):
-        if y < max_y and x < max_x:  # safety check
-            if p == 1:
-                window_pos[y, x] += 1
-            else:
-                window_neg[y, x] += 1
-
-    numevs = [len(xs)]
-    
-    return xs, ys, timestamps, pols, scale_factor, window_pos, window_neg, max_x, max_y, numevs
-
-
-# ---------------------------
-# Visualization functions
-
-def compute_OMS(window_pos, net_center, net_surround, config):
-    OMSpos = torch.tensor(window_pos, dtype=torch.float32).unsqueeze(0).to(config.DEVICE)
-
-    OMSpos_map, indexes_pos = egomotion(OMSpos, net_center, net_surround, config.DEVICE, config.MAX_Y, config.MAX_X,
-                                        config.OMS_PARAMS['threshold'])
-
-    OMSpos_map = OMSpos_map.squeeze(0).squeeze(0).cpu().detach().numpy()
-
-    print("OMS map stats:", OMSpos_map.min(), OMSpos_map.max(), OMSpos_map.mean())
-    
-    return OMSpos_map, indexes_pos
-
-def draw_graph_with_dots(events, suppressed, dropped, width=640, height=480):
-    graph_img = np.ones((height, width, 3), dtype=np.uint8) * 255
-
-    max_events = max(events + suppressed + dropped, default=1)
-    margin = 50
-    scale_x = (width - 2 * margin) / len(events) if events else 1
-    scale_y = (height - 2 * margin) / max_events
-
-    cv2.line(graph_img, (margin, height - margin), (width - margin, height - margin), (0,0,0), 2)
-    cv2.line(graph_img, (margin, height - margin), (margin, margin), (0,0,0), 2)
-
-    for i in range(len(events)):
-        x = margin + int(i * scale_x)
-        y_events = height - margin - int(events[i]*scale_y)
-        cv2.circle(graph_img, (x, y_events), 4, (0,0,255), -1)
-        y_suppressed = height - margin - int(suppressed[i]*scale_y)
-        cv2.circle(graph_img, (x, y_suppressed), 4, (255,0,0), -1)
-    return graph_img
-
-def convert_to_rgb(image):
-    return cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) if len(image.shape) == 2 else image
 
 # ---------------------------
 # Main loop
@@ -135,7 +57,8 @@ class OMSFiltering:
 
         # OMS & Attention Initialization
         
-        xs, ys, timestamps, pols, scale_factor, window_pos, window_neg, max_x, max_y, numevs = load_events(dataset_name)
+        xs, ys, timestamps, pols, scale_factor = load_events(dataset_name)
+        window_pos, window_neg, max_x, max_y, numevs = reset_windows(xs, ys, pols)
         self.xs = xs
         self.ys = ys    
         self.timestamps = timestamps
