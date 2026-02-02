@@ -481,7 +481,12 @@ if __name__ == "__main__":
     # results = compare_representations(train_events, train_labels, test_events, test_labels, num_epochs=5, batch_size=32)
     
     # OPZIONE 2: Use only Event Frame representation (faster)
-    converter = EventFrameConverter(height=128, width=128)
+
+    #converter = EventFrameConverter(height=128, width=128)
+    #converter = StackedFrameConverter(128, 128, num_frames=5)
+    #converter = TimeSurfaceConverter(128, 128, tau=50000)
+    converter = VoxelGridConverter(128, 128, num_bins=5)
+
     train_dataset = DVSGestureDataset(train_events, train_labels, converter, precompute=True)
     test_dataset = DVSGestureDataset(test_events, test_labels, converter, precompute=True)
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=0)
