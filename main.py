@@ -1,4 +1,5 @@
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
+from Filtering_techniques.MaskAdaptiveElbow  import AdaptiveElbowOMSFiltering
 
 if __name__ == "__main__":
     
@@ -7,4 +8,7 @@ if __name__ == "__main__":
     OMSMap, I_filtered = OMSfilter.OMS_filtering()
     OMSfilter.OMS_filtering_visualization(OMSMap, I_filtered)
 
-    
+    # Initialize and run Adaptive Elbow Thresholding
+    AdaptiveElbowFilter = AdaptiveElbowOMSFiltering("DVSGesture")
+    filtered_events, masked_OMS, OMSMap = AdaptiveElbowFilter.Albowdaptive_thresholding()
+    AdaptiveElbowFilter.AdaptiveElbow_filtering_visualization(OMSMap, masked_OMS)
