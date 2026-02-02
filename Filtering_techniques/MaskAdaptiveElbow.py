@@ -129,16 +129,6 @@ class AdaptiveElbowOMSFiltering:
 
     def AdaptiveElbow_filtering_visualization(self, OMS_map, masked_OMS):
         
-        print("OMS map stats:", OMS_map.min(), OMS_map.max(), OMS_map.mean())
-
-        plt.figure(figsize=(6,4))
-        plt.hist(OMS_map.flatten(), bins=100, color='gray')
-        plt.title("OMS Map Value Distribution")
-        plt.xlabel("OMS intensity")
-        plt.ylabel("Number of pixels")
-        plt.show()
-
-
         # Scale components
         scaled_height = int(self.max_y * self.scale_factor)
         scaled_width = int(self.max_x * self.scale_factor)
@@ -157,7 +147,7 @@ class AdaptiveElbowOMSFiltering:
 
         cv2.putText(background, 'Event map', (30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)
         cv2.putText(background, 'OMS map', (scaled_width+30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)
-        cv2.putText(background, 'Masked OMS', (scaled_width*2+30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)
+        cv2.putText(background, 'Masked OMS Adptive Elbow', (scaled_width*2+30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)
         
         cv2.imshow("Visualization", background)
         cv2.waitKey(0)
