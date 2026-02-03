@@ -243,84 +243,108 @@ class DVSGestureCNN(nn.Module):
 
 
 class ModelTrainer:
-    def __init__(self, model, device='cuda' if torch.cuda.is_available() else 'cpu'):
+    def __init__(self, model, device='cuda' if torch.cuda.is_available() else 'cpu', stability_window=5):
         self.model = model.to(device)
         self.device = device
         self.criterion = nn.CrossEntropyLoss()
-        
+        self.stability_window = stability_window  # number of epochs to compute stability
+
     def train_epoch(self, train_loader, optimizer):
         self.model.train()
         total_loss = 0
+        batch_losses = []
         correct = 0
         total = 0
-        
+
         for data, labels in train_loader:
             data = data.to(self.device)
             labels = labels.to(self.device)
-            
+
             optimizer.zero_grad()
             outputs = self.model(data)
             loss = self.criterion(outputs, labels)
-            
             loss.backward()
             optimizer.step()
-            
+
             total_loss += loss.item()
+            batch_losses.append(loss.item())
+
             _, predicted = outputs.max(1)
             total += labels.size(0)
             correct += predicted.eq(labels).sum().item()
-        
-        return total_loss / len(train_loader), 100. * correct / total
-    
+
+        avg_loss = total_loss / len(train_loader)
+        loss_std = np.std(batch_losses)  # measure training stability
+        accuracy = 100. * correct / total
+        return avg_loss, accuracy, loss_std
+
     def evaluate(self, test_loader):
         self.model.eval()
         total_loss = 0
+        batch_losses = []
         correct = 0
         total = 0
-        
+
         with torch.no_grad():
             for data, labels in test_loader:
                 data = data.to(self.device)
                 labels = labels.to(self.device)
-                
+
                 outputs = self.model(data)
                 loss = self.criterion(outputs, labels)
-                
                 total_loss += loss.item()
+                batch_losses.append(loss.item())
+
                 _, predicted = outputs.max(1)
                 total += labels.size(0)
                 correct += predicted.eq(labels).sum().item()
-        
-        return total_loss / len(test_loader), 100. * correct / total
-    
-    def train(self, train_loader, test_loader, num_epochs=50, lr=0.001):
+
+        avg_loss = total_loss / len(test_loader)
+        loss_std = np.std(batch_losses)  # measure stability on test
+        accuracy = 100. * correct / total
+        return avg_loss, accuracy, loss_std
+
+    def train(self, train_loader, test_loader, num_epochs=50, lr=0.001, convergence_threshold=95.0):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
-        
+
         best_acc = 0
-        history = {'train_loss': [], 'train_acc': [], 'test_loss': [], 'test_acc': []}
-        
+        history = {'train_loss': [], 'train_acc': [], 'train_loss_std': [],
+                   'test_loss': [], 'test_acc': [], 'test_loss_std': []}
+        convergence_epoch = None
+
         for epoch in range(num_epochs):
-            train_loss, train_acc = self.train_epoch(train_loader, optimizer)
-            test_loss, test_acc = self.evaluate(test_loader)
-            
+            train_loss, train_acc, train_loss_std = self.train_epoch(train_loader, optimizer)
+            test_loss, test_acc, test_loss_std = self.evaluate(test_loader)
             scheduler.step()
-            
+
             history['train_loss'].append(train_loss)
             history['train_acc'].append(train_acc)
+            history['train_loss_std'].append(train_loss_std)
             history['test_loss'].append(test_loss)
             history['test_acc'].append(test_acc)
-            
+            history['test_loss_std'].append(test_loss_std)
+
             print(f'Epoch {epoch+1}/{num_epochs}')
-            print(f'Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%')
-            print(f'Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.2f}%')
+            print(f'Train Loss: {train_loss:.4f} ± {train_loss_std:.4f}, Train Acc: {train_acc:.2f}%')
+            print(f'Test Loss: {test_loss:.4f} ± {test_loss_std:.4f}, Test Acc: {test_acc:.2f}%')
             print('-' * 60)
-            
+
+            # Save best model
             if test_acc > best_acc:
                 best_acc = test_acc
                 torch.save(self.model.state_dict(), 'best_model.pth')
-        
+
+            # Check convergence speed
+            if convergence_epoch is None and test_acc >= convergence_threshold:
+                convergence_epoch = epoch + 1
+
         print(f'Best Test Accuracy: {best_acc:.2f}%')
+        if convergence_epoch:
+            print(f"Converged (≥{convergence_threshold}% acc) at epoch {convergence_epoch}")
+        else:
+            print(f"Did not reach {convergence_threshold}% accuracy in {num_epochs} epochs.")
+
         return history
 
 
@@ -335,9 +359,10 @@ def compare_representations(train_events, train_labels, test_events, test_labels
     
     # Define rapresentations to test
     representations = {
-        'EventFrame': (EventFrameConverter(HEIGHT, WIDTH), 2),
-        'StackedFrames_5': (StackedFrameConverter(HEIGHT, WIDTH, 5), 10),
-        'VoxelGrid_5': (VoxelGridConverter(HEIGHT, WIDTH, 5), 5),
+        'EventFrame': (EventFrameConverter(HEIGHT, WIDTH), 2), # 2 channels: ON/OFF
+        'StackedFrames_5': (StackedFrameConverter(HEIGHT, WIDTH, 5), 10), # 5 frames x 2 channels
+        'TimeSurfaceConverter': (TimeSurfaceConverter(HEIGHT, WIDTH, tau=50000), 2), # 2 channels: ON/OFF
+        'VoxelGrid_5': (VoxelGridConverter(HEIGHT, WIDTH, 5), 5), # 5 temporal bins
     }
     
     results = {}
@@ -456,7 +481,12 @@ if __name__ == "__main__":
     # results = compare_representations(train_events, train_labels, test_events, test_labels, num_epochs=5, batch_size=32)
     
     # OPZIONE 2: Use only Event Frame representation (faster)
-    converter = EventFrameConverter(height=128, width=128)
+
+    #converter = EventFrameConverter(height=128, width=128)
+    #converter = StackedFrameConverter(128, 128, num_frames=5)
+    #converter = TimeSurfaceConverter(128, 128, tau=50000)
+    converter = VoxelGridConverter(128, 128, num_bins=5)
+
     train_dataset = DVSGestureDataset(train_events, train_labels, converter, precompute=True)
     test_dataset = DVSGestureDataset(test_events, test_labels, converter, precompute=True)
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=0)
