@@ -2,6 +2,10 @@ import cv2
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
+import tonic
+
+from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
+from functions.loadDatasetFunctions import load_events, reset_windows
 
 # ---------------------------
 # Config
@@ -12,122 +16,78 @@ class Config:
     MAX_Y = RESOLUTION[1]
     DEVICE = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
 
-    RANDOM_KEEP_PROB = 0.3  # Keep 30% of events randomly
-
 config = Config()
 
-# ---------------------------
-# Load Events (DVSGesture)
-# ---------------------------
-import tonic
-dataset = tonic.datasets.DVSGesture(save_to="../Datasets", train=False)
-events, label = dataset[0]
+class RandomEventFiltering:
+    def __init__(self, dataset_name):
+        self.dataset_name = dataset_name
+        xs, ys, timestamps, pols, scale_factor = load_events(dataset_name)
+        window_pos, window_neg, max_x, max_y, numevs = reset_windows(xs, ys, pols)
+        self.xs = xs    
+        self.ys = ys
+        self.timestamps = timestamps
+        self.pols = pols
+        self.scale_factor = scale_factor
+        self.window_pos = window_pos
+        self.window_neg = window_neg
+        self.max_x = max_x
+        self.max_y = max_y
+        self.numevs = numevs
+        self.events_list = [numevs[0]]
+        self.suppressed_list = [numevs[0]]
+        self.dropped_list = [0]
+        self.config = Config()
 
-xs = events["x"].astype(int)
-ys = events["y"].astype(int)
-pols = events["p"].astype(int)
 
-max_x = int(xs.max()) + 1
-max_y = int(ys.max()) + 1
+    def Random_filtering(self, random_keep_prob):
+        
+        # Generate random mask per event
+        random_mask = np.random.rand(len(self.xs)) < random_keep_prob
 
-# ---------------------------
-# Accumulate RAW events
-# ---------------------------
-window_pos_raw = np.zeros((max_y, max_x), dtype=np.uint16)
-for x, y, p in zip(xs, ys, pols):
-    if p == 1:
-        window_pos_raw[y, x] += 1
+        xs_rand = self.xs[random_mask]
+        ys_rand = self.ys[random_mask]
+        pols_rand = self.pols[random_mask]
+        timestamps_rand = self.timestamps[random_mask]
 
-# ---------------------------
-# RANDOM FILTERING
-# ---------------------------
+        filtered_events = list(zip(xs_rand, ys_rand, timestamps_rand, pols_rand))
 
-# Generate random mask per event
-random_mask = np.random.rand(len(xs)) < config.RANDOM_KEEP_PROB
+        # Accumulate filtered events
+        window_pos_random = np.zeros((self.max_y, self.max_x), dtype=np.uint16)
+        for x, y, p in zip(xs_rand, ys_rand, pols_rand):
+            if p == 1:
+                window_pos_random[y, x] += 1
 
-xs_rand = xs[random_mask]
-ys_rand = ys[random_mask]
-pols_rand = pols[random_mask]
+        self.events_list = [len(self.xs)]
+        self.suppressed_list = [len(self.xs) - len(xs_rand)]
+        self.dropped_list = [0]
 
-# Accumulate filtered events
-window_pos_random = np.zeros((max_y, max_x), dtype=np.uint16)
-for x, y, p in zip(xs_rand, ys_rand, pols_rand):
-    if p == 1:
-        window_pos_random[y, x] += 1
+        return window_pos_random, xs_rand, filtered_events
+    
+    def Random_filtering_visualization(self, window_pos_random, xs_rand):
 
-# ---------------------------
-# Stats for visualization
-# ---------------------------
-events_list = [len(xs)]
-suppressed_list = [len(xs) - len(xs_rand)]
-dropped_list = [0]
+        scaled_h = int(self.max_y * self.scale_factor)
+        scaled_w = int(self.max_x * self.scale_factor)
 
-# ---------------------------
-# Visualization helpers
-# ---------------------------
-def convert_to_rgb(image):
-    return cv2.cvtColor(image, cv2.COLOR_GRAY2BGR) if len(image.shape) == 2 else image
+        background = np.ones((scaled_h, scaled_w * 2, 3), dtype=np.uint8) * 255
 
-def draw_graph_with_dots(events, suppressed, dropped, width=640, height=480):
-    graph_img = np.ones((height, width, 3), dtype=np.uint8) * 255
+        raw_resized = convert_to_rgb(cv2.resize(self.window_pos, (scaled_w, scaled_h)))
+        rand_resized = convert_to_rgb(cv2.resize(window_pos_random, (scaled_w, scaled_h)))
 
-    max_val = max(events[0], suppressed[0], 1)
-    margin = 50
-    scale_y = (height - 2 * margin) / max_val
+        background[:, :scaled_w] = raw_resized
+        background[:, scaled_w:scaled_w*2] = rand_resized
 
-    # axes
-    cv2.line(graph_img, (margin, height - margin), (width - margin, height - margin), (0,0,0), 2)
-    cv2.line(graph_img, (margin, height - margin), (margin, margin), (0,0,0), 2)
+        cv2.putText(background, "1. RAW Event Map", (30, 60),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,255,0), 2)
+        cv2.putText(background, "2. Randomly Filtered Events", (scaled_w+30, 60),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,255,0), 2)
 
-    x = width // 2
-    y_raw = height - margin - int(events[0] * scale_y)
-    y_sup = height - margin - int(suppressed[0] * scale_y)
+        cv2.imshow("Random Event Filtering Baseline", background)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
-    cv2.circle(graph_img, (x, y_raw), 6, (255, 0, 0), -1)
-    cv2.circle(graph_img, (x, y_sup), 6, (0, 0, 255), -1)
+        print("Random filtering complete")
+        print("Kept events:", len(xs_rand))
+        print("Dropped events:", len(self.xs) - len(xs_rand))
 
-    cv2.putText(graph_img, f"Raw: {events[0]}", (x-80, y_raw-10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,0), 1)
-    cv2.putText(graph_img, f"Suppressed: {suppressed[0]}", (x-80, y_sup+20),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,0), 1)
 
-    cv2.putText(graph_img, "Random Filtering Stats",
-                (margin, margin-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,0,0), 1)
-
-    return graph_img
-
-# ---------------------------
-# FINAL VISUALIZATION (Same Layout)
-# ---------------------------
-scale_factor = 4
-scaled_h = int(max_y * scale_factor)
-scaled_w = int(max_x * scale_factor)
-
-background = np.ones((scaled_h, scaled_w * 3, 3), dtype=np.uint8) * 255
-
-raw_resized = convert_to_rgb(cv2.resize(window_pos_raw, (scaled_w, scaled_h)))
-rand_resized = convert_to_rgb(cv2.resize(window_pos_random, (scaled_w, scaled_h)))
-graph_resized = cv2.resize(draw_graph_with_dots(events_list, suppressed_list, dropped_list),
-                           (scaled_w, scaled_h))
-
-background[:, :scaled_w] = raw_resized
-background[:, scaled_w:scaled_w*2] = rand_resized
-background[:, scaled_w*2:] = graph_resized
-
-cv2.putText(background, "1. RAW Event Map", (30, 60),
-            cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,255,0), 2)
-cv2.putText(background, "2. Randomly Filtered Events", (scaled_w+30, 60),
-            cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,255,0), 2)
-cv2.putText(background, f"3. Event Stats (p={config.RANDOM_KEEP_PROB})",
-            (scaled_w*2+30, 60),
-            cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,255,0), 2)
-
-cv2.imshow("Random Event Filtering Baseline", background)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-print("✅ Random filtering complete")
-print("Kept events:", len(xs_rand))
-print("Dropped events:", len(xs) - len(xs_rand))
-print("Label:", label)
 

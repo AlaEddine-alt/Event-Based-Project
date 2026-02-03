@@ -3,6 +3,9 @@ from Filtering_techniques.MaskAdaptiveElbow  import AdaptiveElbowOMSFiltering
 from Filtering_techniques.MaskGoalOriented import MaskGoalOrientedOMSFiltering
 from Filtering_techniques.MaskMeanStandardDeviation import MaskMeanStandardDeviation
 from Filtering_techniques.MaskGlobalSaliencyBasedCropping import MaskGlobalSaliencyBasedCropping
+from Filtering_techniques.Random_filtering import RandomEventFiltering
+from Filtering_techniques.Denoise import Denoise
+from Filtering_techniques.RandomCropFiltering import RandomCropFiltering
 
 if __name__ == "__main__":
     
@@ -33,7 +36,7 @@ if __name__ == "__main__":
     filtered_events = MeanStdFilter.Mean_std_thresholding(k_sigma)
     MeanStdFilter.MeanStd_filtering_visualization(filtered_events, k_sigma)
     """
-
+    """
     # Initialize and run Global Saliency Based Cropping
     GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping("DVSGesture")
     Use_percentile = True
@@ -41,4 +44,24 @@ if __name__ == "__main__":
     threshold = 0.4
     filred_events, OMS_norm, cropped_OMS_map, crop_box = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(Use_percentile, percentile, threshold)
     GlobalSaliencyCropper.MaskGlobalSaliency_filtering_visualization(cropped_OMS_map, OMS_norm)
+    """
+    """
+    # Initialize and run Random Filtering 
+    RandomFiltering = RandomEventFiltering("DVSGesture")
+    random_keep_prob = 0.2  # Keep 30% of events randomly
+    window_pos_random, xs_rand, filtered_events = RandomFiltering.Random_filtering(random_keep_prob)
+    RandomFiltering.Random_filtering_visualization(window_pos_random, xs_rand)   
+    """
+    """
+    # Initialize and run Denoising Filtering
+    DenoiseFiltering = Denoise("DVSGesture")
+    events_denoised = DenoiseFiltering.Denoise_filtering()
+    DenoiseFiltering.Denoise_filtering_visualization()
+    """
 
+    # Initialize and run Random Cropping Filtering
+    sensor_size = (128, 128)      # original DVS resolution
+    crop_size = (64, 64)         # desired crop size
+    RandomCrop_filtering = RandomCropFiltering("DVSGesture", sensor_size, crop_size)
+    events_cropped = RandomCrop_filtering.RandomCrop_filtering(sensor_size, crop_size)
+    RandomCrop_filtering.RandomCrop_filtering_visualization(events_cropped)
