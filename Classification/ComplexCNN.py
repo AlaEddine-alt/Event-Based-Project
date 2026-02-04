@@ -257,34 +257,30 @@ class ModelTrainer:
         else: print(f"Did not reach {convergence_threshold}% accuracy")
         return history
 
-# ------------------------
-# Confusion Matrix
-# ------------------------
-def plot_confusion_matrix(model, dataloader, class_names, device):
-    model.eval()
-    all_preds, all_labels = [], []
-    with torch.no_grad():
-        for data, labels in dataloader:
-            data, labels = data.to(device), labels.to(device)
-            outputs = model(data)
-            preds = torch.argmax(outputs, dim=1)
-            all_preds.append(preds.cpu().numpy())
-            all_labels.append(labels.cpu().numpy())
-    all_preds = np.concatenate(all_preds)
-    all_labels = np.concatenate(all_labels)
-    cm = confusion_matrix(all_labels, all_preds)
-    fig, ax = plt.subplots(figsize=(8, 8))
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_names)
-    disp.plot(ax=ax, cmap="Blues", xticks_rotation=45)
-    plt.show()
+    # Confusion Matrix
+    def plot_confusion_matrix(model, dataloader, class_names, device):
+        model.eval()
+        all_preds, all_labels = [], []
+        with torch.no_grad():
+            for data, labels in dataloader:
+                data, labels = data.to(device), labels.to(device)
+                outputs = model(data)
+                preds = torch.argmax(outputs, dim=1)
+                all_preds.append(preds.cpu().numpy())
+                all_labels.append(labels.cpu().numpy())
+        all_preds = np.concatenate(all_preds)
+        all_labels = np.concatenate(all_labels)
+        cm = confusion_matrix(all_labels, all_preds)
+        fig, ax = plt.subplots(figsize=(8, 8))
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_names)
+        disp.plot(ax=ax, cmap="Blues", xticks_rotation=45)
+        plt.show()
 
 # ------------------------
 # Main Execution
 # ------------------------
-if __name__ == "__main__":
-    print("Loading DVSGesture dataset...")
-    dataset_training = tonic.datasets.DVSGesture(save_to="../Datasets", train=True)
-    dataset_testing = tonic.datasets.DVSGesture(save_to="../Datasets", train=False)
+def train_model(dataset_training, dataset_testing):
+    
 
     # Extract events and labels
     def extract_events(dataset):
@@ -301,9 +297,9 @@ if __name__ == "__main__":
     # Choose converter
     
     #converter = EventFrameConverter(height=128, width=128)
-    converter = StackedFrameConverter(128, 128, num_frames=5)
+    #converter = StackedFrameConverter(128, 128, num_frames=5)
     #converter = TimeSurfaceConverter(128, 128, tau=50000)
-    #converter = VoxelGridConverter(128, 128, num_bins=5)
+    converter = VoxelGridConverter(128, 128, num_bins=5)
     
     dummy_event = {'x': np.array([0]), 'y': np.array([0]), 't': np.array([0]), 'p': np.array([1])}
     num_channels = converter.convert(dummy_event).shape[0]
@@ -327,4 +323,4 @@ if __name__ == "__main__":
     class_names = ["Hand Clapping", "Right Hand Wave", "Left Hand Wave",
                    "Right Arm CW", "Right Arm CCW", "Left Arm CW", "Left Arm CCW",
                    "Arm Roll", "Air Drums", "Air Guitar", "Other"]
-    plot_confusion_matrix(model, test_loader, class_names, device=trainer.device)
+    trainer.plot_confusion_matrix(model, test_loader, class_names, device=trainer.device)

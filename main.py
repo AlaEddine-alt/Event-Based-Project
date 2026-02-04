@@ -1,3 +1,5 @@
+import tonic
+
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
 from Filtering_techniques.MaskAdaptiveElbow  import AdaptiveElbowOMSFiltering
 from Filtering_techniques.MaskGoalOriented import MaskGoalOrientedOMSFiltering
@@ -6,6 +8,7 @@ from Filtering_techniques.MaskGlobalSaliencyBasedCropping import MaskGlobalSalie
 from Filtering_techniques.Random_filtering import RandomEventFiltering
 from Filtering_techniques.Denoise import Denoise
 from Filtering_techniques.RandomCropFiltering import RandomCropFiltering
+from Classification.ComplexCNN import train_model
 
 if __name__ == "__main__":
     
@@ -59,9 +62,20 @@ if __name__ == "__main__":
     DenoiseFiltering.Denoise_filtering_visualization()
     """
 
+    """
     # Initialize and run Random Cropping Filtering
     sensor_size = (128, 128)      # original DVS resolution
     crop_size = (64, 64)         # desired crop size
     RandomCrop_filtering = RandomCropFiltering("DVSGesture", sensor_size, crop_size)
     events_cropped = RandomCrop_filtering.RandomCrop_filtering(sensor_size, crop_size)
     RandomCrop_filtering.RandomCrop_filtering_visualization(events_cropped)
+    """
+
+    # Training the ComplexCNN model
+    print("Loading DVSGesture dataset...")
+    dataset_training = tonic.datasets.DVSGesture(save_to="../Datasets", train=True)
+    dataset_testing = tonic.datasets.DVSGesture(save_to="../Datasets", train=False)
+
+    train_model(dataset_training, dataset_testing)
+
+
