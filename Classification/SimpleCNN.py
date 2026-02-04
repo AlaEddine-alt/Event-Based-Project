@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 class DVSGestureFrames(Dataset):
     def __init__(self, train=True):
         # Setting download=True helps ensure files exist
-        self.dataset = DVSGesture(save_to="../Datasets", train=train)
+        self.dataset = DVSGesture(save_to="C:/Datasets", train=train)
         self.height = 128
         self.width = 128
 
