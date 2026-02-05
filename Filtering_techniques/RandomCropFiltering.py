@@ -3,11 +3,11 @@ import tonic
 import numpy as np
 import matplotlib.pyplot as plt
 
-from functions.loadDatasetFunctions import load_events
+from functions.loadDatasetFunctions import extract_single_event
 
 class RandomCropFiltering:
-    def __init__(self, dataset_name, sensor_size, crop_size):
-        xs, ys, timestamps, pols, scale_factor = load_events(dataset_name)
+    def __init__(self, event, scale_factor, sensor_size, crop_size):
+        xs, ys, timestamps, pols = extract_single_event(event)
         self.events = np.zeros(len(xs), dtype=[
             ('x', np.int16),
             ('y', np.int16),
@@ -80,7 +80,7 @@ class RandomCropFiltering:
         print(f"Cropped events  = {N_cropped}")
         print(f"ERR            = {ERR_cropped:.4f}")
 
-        return events_cropped
+        return events_cropped, ERR_cropped
     
     def events_to_image(self, events, sensor_size):
 

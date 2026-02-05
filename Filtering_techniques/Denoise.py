@@ -3,11 +3,11 @@ import numpy as np
 import tonic
 import matplotlib.pyplot as plt
 
-from functions.loadDatasetFunctions import load_events
+from functions.loadDatasetFunctions import extract_single_event
 
 class Denoise:
-    def __init__(self, datset_name):
-        xs, ys, timestamps, pols, scale_factor = load_events(datset_name)
+    def __init__(self, event, scale_factor):
+        xs, ys, timestamps, pols = extract_single_event(event)
         self.events = np.zeros(len(xs), dtype=[
             ('x', np.int16),
             ('y', np.int16),
@@ -68,14 +68,14 @@ class Denoise:
         N_denoised = len(events_denoised)
         ERR_denoise = 1.0 - (N_denoised / self.N_original)
 
-        print("\n🧹 DVSGesture Denoising")
+        print("\nDVSGesture Denoising")
         print(f"Original events = {self.N_original}")
         print(f"Denoised events = {N_denoised}")
         print(f"ERR = {ERR_denoise:.4f}")
         
         self.window_denoised = self.build_event_map(events_denoised)
 
-        return events_denoised
+        return events_denoised, ERR_denoise
 
     def Denoise_filtering_visualization(self):
 

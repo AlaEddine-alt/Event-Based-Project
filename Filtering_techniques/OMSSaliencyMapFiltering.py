@@ -7,7 +7,7 @@ import tonic
 from functions.OMS_helpers import *
 from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
-from functions.loadDatasetFunctions import load_events, reset_windows
+from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from functions.computeOMSFunction import compute_OMS
 
 # ---------------------------
@@ -53,11 +53,11 @@ class Config:
 
 class OMSFiltering:
 
-    def __init__(self, dataset_name):
+    def __init__(self, event, scale_factor):
 
         # OMS & Attention Initialization
         
-        xs, ys, timestamps, pols, scale_factor = load_events(dataset_name)
+        xs, ys, timestamps, pols = extract_single_event(event)
         window_pos, window_neg, max_x, max_y, numevs = reset_windows(xs, ys, pols)
         self.xs = xs
         self.ys = ys    
@@ -174,14 +174,15 @@ class OMSFiltering:
         num_total_events = len(self.xs)
         num_filtered_events = len(filtered_xs)
         num_suppressed_events = len(suppressed_xs)
+        ERR = 1.0 - (num_filtered_events / num_total_events)
 
         print("----- OMS Filtering Stats -----")
         print(f"Total events     : {num_total_events}")
         print(f"Retained events  : {num_filtered_events}")
         print(f"Filtered events  : {num_suppressed_events}")
-        print(f"Filtered ratio   : {num_suppressed_events / num_total_events:.2f}")
+        print(f"Filtered ratio   : {ERR:.4f}")
 
-        return OMS_map, I_filtered_8bit
+        return OMS_map, I_filtered_8bit, ERR
 
     def OMS_filtering_visualization(self, OMS_map, I_filtered_8bit):
         # ---------------------------

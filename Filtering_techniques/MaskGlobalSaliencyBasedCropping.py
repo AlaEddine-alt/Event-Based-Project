@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from functions.OMS_helpers import *
 from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
-from functions.loadDatasetFunctions import load_events, reset_windows
+from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
 
 
@@ -51,9 +51,8 @@ class Config:
 
 class MaskGlobalSaliencyBasedCropping():
     
-    def __init__(self, dataset_name):
-        self.dataset_name = dataset_name
-        xs, ys, timestamps, pols, scale_factor = load_events(dataset_name)
+    def __init__(self, event, scale_factor):
+        xs, ys, timestamps, pols = extract_single_event(event)
         window_pos, window_neg, max_x, max_y, numevs = reset_windows(xs, ys, pols)
         self.xs = xs
         self.ys = ys    
@@ -73,8 +72,8 @@ class MaskGlobalSaliencyBasedCropping():
 
         # OMS & Attention Initialization
 
-        OMS_filter = OMSFiltering(dataset_name)
-        self.OMS_map, _ = OMS_filter.OMS_filtering()
+        OMS_filter = OMSFiltering(event, scale_factor)
+        self.OMS_map, _, _ = OMS_filter.OMS_filtering()
 
     def MaskGlobalSaliency_filtering(self, use_percentile=True, percentile=90, threshold=0.4):
 
@@ -112,7 +111,7 @@ class MaskGlobalSaliencyBasedCropping():
             x_min, x_max = xs_sal.min(), xs_sal.max()
             y_min, y_max = ys_sal.min(), ys_sal.max()
 
-        print("\n🔍 Proposed cropping coordinates:")
+        print("Proposed cropping coordinates:")
         print(f"  x_min={x_min}, x_max={x_max}")
         print(f"  y_min={y_min}, y_max={y_max}")
         print(f"  Crop size = {(y_max-y_min)} x {(x_max-x_min)}")
@@ -140,7 +139,7 @@ class MaskGlobalSaliencyBasedCropping():
         print(f"Original events   : {N_original}")
         print(f"Events in crop    : {N_filtered}")
         print(f"Suppressed events : {N_suppressed}")
-        print(f"ERR               : {ERR:.4f} ({ERR*100:.2f}%)")
+        print(f"ERR               : {ERR:.4f}")
         print("=======================================================")
 
         # Step 5: Crop original event image & OMS map
@@ -158,7 +157,7 @@ class MaskGlobalSaliencyBasedCropping():
 
         print("Saved crop box:", crop_box)
 
-        return filred_events, OMS_norm, cropped_OMS_map, crop_box
+        return filred_events, OMS_norm, cropped_OMS_map, crop_box, ERR
     
     def MaskGlobalSaliency_filtering_visualization(self, cropped_OMS_map, OMS_norm):
 

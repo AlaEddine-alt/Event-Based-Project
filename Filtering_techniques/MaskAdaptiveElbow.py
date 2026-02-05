@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from functions.OMS_helpers import *
 from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
-from functions.loadDatasetFunctions import load_events, reset_windows
+from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
 
 # ---------------------------
@@ -51,9 +51,8 @@ class Config:
 
 
 class AdaptiveElbowOMSFiltering:
-    def __init__(self, dataset_name):
-        self.dataset_name = dataset_name
-        xs, ys, timestamps, pols, scale_factor = load_events(dataset_name)
+    def __init__(self, event, scale_factor):
+        xs, ys, timestamps, pols = extract_single_event(event)
         window_pos, window_neg, max_x, max_y, numevs = reset_windows(xs, ys, pols)
         self.xs = xs
         self.ys = ys    
@@ -73,8 +72,8 @@ class AdaptiveElbowOMSFiltering:
 
         # OMS & Attention Initialization
 
-        OMS_filter = OMSFiltering(dataset_name)
-        self.OMS_map, _ = OMS_filter.OMS_filtering()
+        OMS_filter = OMSFiltering(event, scale_factor)
+        self.OMS_map, _, _ = OMS_filter.OMS_filtering()
         
         # Adaptive Elbow Method for Thresholding
     def adaptive_elbow_threshold(self):
@@ -123,9 +122,12 @@ class AdaptiveElbowOMSFiltering:
                 if masked_OMS[x, y] > 0:   # CORRETTO: [y, x]
                     filtered_events.append((x, y, t, p))
 
+        ERR = 1.0 - (len(filtered_events) / len(self.xs))
+
         print(f"Filtered events: {len(filtered_events)} (out of {len(self.xs)})")
+        print(f"Filtering ERR: {ERR:.4f}")
         
-        return filtered_events, masked_OMS, self.OMS_map
+        return filtered_events, masked_OMS, self.OMS_map, ERR
 
     def AdaptiveElbow_filtering_visualization(self, OMS_map, masked_OMS):
         
