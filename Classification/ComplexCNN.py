@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import time
 
+from functions.loadDatasetFunctions import extract_events
+
 # ------------------------
 # Event Converters
 # ------------------------
@@ -280,16 +282,6 @@ class ModelTrainer:
 # Main Execution
 # ------------------------
 def train_model(dataset_training, dataset_testing):
-    
-
-    # Extract events and labels
-    def extract_events(dataset):
-        events_list, labels_list = [], []
-        for i in range(len(dataset)):
-            events, label = dataset[i]
-            events_list.append({'x': events['x'], 'y': events['y'], 't': events['t'], 'p': events['p']})
-            labels_list.append(label)
-        return events_list, labels_list
 
     train_events, train_labels = extract_events(dataset_training)
     test_events, test_labels = extract_events(dataset_testing)
