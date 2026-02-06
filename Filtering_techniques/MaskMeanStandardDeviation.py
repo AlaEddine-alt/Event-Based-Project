@@ -11,6 +11,7 @@ from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
 from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
+from functions.adaptFilteredData import tuple_events_to_event_dict
 
 # ---------------------------
 # Config
@@ -68,7 +69,7 @@ class MaskMeanStandardDeviation:
         # OMS & Attention Initialization
 
         OMS_filter = OMSFiltering(event, scale_factor)
-        self.OMS_map, _, _ = OMS_filter.OMS_filtering()
+        self.OMS_map, _, _, _ = OMS_filter.OMS_filtering()
 
     def Mean_std_thresholding(self, k_sigma):
         # Flatten the OMS map to calculate statistics
@@ -132,12 +133,12 @@ class MaskMeanStandardDeviation:
 
         ERR = 1.0 - (N_filtered / N_original)
 
-        print("========== Event Reduction Stats ==========")
-        print(f"Original events  : {N_original}")
-        print(f"Filtered events  : {N_filtered}")
-        print(f"Suppressed events: {N_original - N_filtered}")
-        print(f"ERR              : {ERR:.4f} ({ERR*100:.2f}%)")
-        print("==========================================")
+        # print("========== Event Reduction Stats ==========")
+        # print(f"Original events  : {N_original}")
+        # print(f"Filtered events  : {N_filtered}")
+        # print(f"Suppressed events: {N_original - N_filtered}")
+        # print(f"ERR              : {ERR:.4f} ({ERR*100:.2f}%)")
+        # print("==========================================")
 
                 
         # Calculate stats for the graph
@@ -145,7 +146,9 @@ class MaskMeanStandardDeviation:
         self.suppressed_list = [len(self.xs) - len(xs_filtered)] 
         self.dropped_list = [0]
 
-        return filtered_events, ERR
+        event_dict = tuple_events_to_event_dict(filtered_events)
+
+        return event_dict, ERR
 
     def MeanStd_filtering_visualization(self, filtered_events, k_sigma):
 

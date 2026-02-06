@@ -10,6 +10,7 @@ from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
 from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
+from functions.adaptFilteredData import tuple_events_to_event_dict
 
 
 # ---------------------------
@@ -73,7 +74,7 @@ class MaskGlobalSaliencyBasedCropping():
         # OMS & Attention Initialization
 
         OMS_filter = OMSFiltering(event, scale_factor)
-        self.OMS_map, _, _ = OMS_filter.OMS_filtering()
+        self.OMS_map, _, _, _ = OMS_filter.OMS_filtering()
 
     def MaskGlobalSaliency_filtering(self, use_percentile=True, percentile=90, threshold=0.4):
 
@@ -111,16 +112,15 @@ class MaskGlobalSaliencyBasedCropping():
             x_min, x_max = xs_sal.min(), xs_sal.max()
             y_min, y_max = ys_sal.min(), ys_sal.max()
 
-        print("Proposed cropping coordinates:")
-        print(f"  x_min={x_min}, x_max={x_max}")
-        print(f"  y_min={y_min}, y_max={y_max}")
-        print(f"  Crop size = {(y_max-y_min)} x {(x_max-x_min)}")
+        # print("Proposed cropping coordinates:")
+        # print(f"  x_min={x_min}, x_max={x_max}")
+        # print(f"  y_min={y_min}, y_max={y_max}")
+        # print(f"  Crop size = {(y_max-y_min)} x {(x_max-x_min)}")
 
         # Step 4.5: Event Reduction Ratio (ERR) — Crop-based
 
         # Total number of original events
         N_original = len(self.xs)
-    
 
         # Count events that fall INSIDE the crop
         inside_crop = np.logical_and.reduce((
@@ -135,12 +135,12 @@ class MaskGlobalSaliencyBasedCropping():
 
         ERR = 1.0 - (N_filtered / N_original)
 
-        print("\n========== Event Reduction Stats (Crop-based) ==========")
-        print(f"Original events   : {N_original}")
-        print(f"Events in crop    : {N_filtered}")
-        print(f"Suppressed events : {N_suppressed}")
-        print(f"ERR               : {ERR:.4f}")
-        print("=======================================================")
+        # print("\n========== Event Reduction Stats (Crop-based) ==========")
+        # print(f"Original events   : {N_original}")
+        # print(f"Events in crop    : {N_filtered}")
+        # print(f"Suppressed events : {N_suppressed}")
+        # print(f"ERR               : {ERR:.4f}")
+        # print("=======================================================")
 
         # Step 5: Crop original event image & OMS map
         cropped_event_map = self.window_pos[y_min:y_max+1, x_min:x_max+1]
@@ -157,7 +157,9 @@ class MaskGlobalSaliencyBasedCropping():
 
         print("Saved crop box:", crop_box)
 
-        return filred_events, OMS_norm, cropped_OMS_map, crop_box, ERR
+        event_dict = tuple_events_to_event_dict(filred_events)
+
+        return event_dict, OMS_norm, cropped_OMS_map, crop_box, ERR
     
     def MaskGlobalSaliency_filtering_visualization(self, cropped_OMS_map, OMS_norm):
 

@@ -1,6 +1,59 @@
 import numpy as np
 import tonic
 
+import os
+import numpy as np
+from torch.utils.data import Dataset
+
+class DVSGestureNPYDataset(Dataset):
+    def __init__(self, root_dir, users=None):
+        self.samples = []
+
+        for user_folder in sorted(os.listdir(root_dir)):
+            if users is not None and user_folder not in users:
+                continue
+
+            folder_path = os.path.join(root_dir, user_folder)
+            if not os.path.isdir(folder_path):
+                continue
+
+            for label in range(11):
+                npy_path = os.path.join(folder_path, f"{label}.npy")
+                if not os.path.exists(npy_path):
+                    continue
+                self.samples.append((npy_path, label))
+
+        print(f"Loaded {len(self.samples)} samples")
+
+    def __len__(self):
+        return len(self.samples)
+
+    def _load_events(self, path):
+        data = np.load(path)
+
+        # structured array
+        if data.dtype.names is not None:
+            return {
+                'x': data['x'],
+                'y': data['y'],
+                't': data['t'],
+                'p': data['p']
+            }
+
+        # plain Nx4 array
+        return {
+            'x': data[:, 0],
+            'y': data[:, 1],
+            't': data[:, 2],
+            'p': data[:, 3]
+        }
+
+    def __getitem__(self, idx):
+        path, label = self.samples[idx]
+        events = self._load_events(path)
+        return events, label
+
+
 def load_events(dataset_name):
 
     if dataset_name == "DSEC":

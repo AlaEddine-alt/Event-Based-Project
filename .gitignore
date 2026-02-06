@@ -24,6 +24,9 @@ ENV/
 
 # Datasets
 Datasets/
+DVSGestureDownsampled/
+FilteredDatasets/
+DVSGestureDownsampled.zip
 *.txt
 Dsec.txt
 middleDb.txt

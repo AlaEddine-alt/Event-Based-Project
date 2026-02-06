@@ -10,6 +10,7 @@ from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
 from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
+from functions.adaptFilteredData import tuple_events_to_event_dict
 
 # ---------------------------
 # Config
@@ -73,7 +74,7 @@ class AdaptiveElbowOMSFiltering:
         # OMS & Attention Initialization
 
         OMS_filter = OMSFiltering(event, scale_factor)
-        self.OMS_map, _, _ = OMS_filter.OMS_filtering()
+        self.OMS_map, _, _, _ = OMS_filter.OMS_filtering()
         
         # Adaptive Elbow Method for Thresholding
     def adaptive_elbow_threshold(self):
@@ -126,8 +127,10 @@ class AdaptiveElbowOMSFiltering:
 
         print(f"Filtered events: {len(filtered_events)} (out of {len(self.xs)})")
         print(f"Filtering ERR: {ERR:.4f}")
+
+        events_dict = tuple_events_to_event_dict(filtered_events)
         
-        return filtered_events, masked_OMS, self.OMS_map, ERR
+        return events_dict, masked_OMS, self.OMS_map, ERR
 
     def AdaptiveElbow_filtering_visualization(self, OMS_map, masked_OMS):
         

@@ -9,6 +9,7 @@ from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
 from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from functions.computeOMSFunction import compute_OMS
+from functions.adaptFilteredData import tuple_events_to_event_dict
 
 # ---------------------------
 # Config
@@ -170,19 +171,23 @@ class OMSFiltering:
                     suppressed_xs.append(x)
                     suppressed_ys.append(y)
 
+        filtered_events = list(zip(filtered_xs, filtered_ys, filtered_ts, filtered_ps))
+
         # Statistics
         num_total_events = len(self.xs)
         num_filtered_events = len(filtered_xs)
         num_suppressed_events = len(suppressed_xs)
         ERR = 1.0 - (num_filtered_events / num_total_events)
 
-        print("----- OMS Filtering Stats -----")
-        print(f"Total events     : {num_total_events}")
-        print(f"Retained events  : {num_filtered_events}")
-        print(f"Filtered events  : {num_suppressed_events}")
-        print(f"Filtered ratio   : {ERR:.4f}")
+        # print("----- OMS Filtering Stats -----")
+        # print(f"Total events     : {num_total_events}")
+        # print(f"Retained events  : {num_filtered_events}")
+        # print(f"Filtered events  : {num_suppressed_events}")
+        # print(f"Filtered ratio   : {ERR:.4f}")
 
-        return OMS_map, I_filtered_8bit, ERR
+        events_dict = tuple_events_to_event_dict(filtered_events)
+
+        return OMS_map, events_dict, I_filtered_8bit, ERR
 
     def OMS_filtering_visualization(self, OMS_map, I_filtered_8bit):
         # ---------------------------

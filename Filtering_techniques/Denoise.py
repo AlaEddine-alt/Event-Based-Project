@@ -4,6 +4,7 @@ import tonic
 import matplotlib.pyplot as plt
 
 from functions.loadDatasetFunctions import extract_single_event
+from functions.adaptFilteredData import structured_to_event_dict
 
 class Denoise:
     def __init__(self, event, scale_factor):
@@ -75,7 +76,10 @@ class Denoise:
         
         self.window_denoised = self.build_event_map(events_denoised)
 
-        return events_denoised, ERR_denoise
+        # Convert to classifier-compatible format
+        events_dict = structured_to_event_dict(events_denoised)
+
+        return events_dict, ERR_denoise
 
     def Denoise_filtering_visualization(self):
 

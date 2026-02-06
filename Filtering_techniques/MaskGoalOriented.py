@@ -10,6 +10,7 @@ from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
 from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
+from functions.adaptFilteredData import tuple_events_to_event_dict
 
 
 # ---------------------------
@@ -76,7 +77,7 @@ class MaskGoalOrientedOMSFiltering:
         # OMS & Attention Initialization
 
         OMS_filter = OMSFiltering(event, scale_factor)
-        self.OMS_map, _, _ = OMS_filter.OMS_filtering()
+        self.OMS_map, _, _, _ = OMS_filter.OMS_filtering()
 
     # Mask - goal oriented thresholding
     def goal_oriented_thresholding(self, keep_percent):
@@ -110,11 +111,13 @@ class MaskGoalOrientedOMSFiltering:
                 if masked_OMS[x, y] > 0:   # CORRETTO: [y, x]
                     filtered_events.append((x, y, t, p))
 
-        print(f"Filtered events: {len(filtered_events)} (out of {len(self.xs)})")
+        # print(f"Filtered events: {len(filtered_events)} (out of {len(self.xs)})")
         ERR = 1.0 - (len(filtered_events) / len(self.xs))
-        print(f"Filtering Error Rate (ERR): {ERR:.4f}")
+        # print(f"Filtering Error Rate (ERR): {ERR:.4f}")
+
+        event_dict = tuple_events_to_event_dict(filtered_events)
         
-        return filtered_events, masked_OMS, self.OMS_map, ERR
+        return event_dict, masked_OMS, self.OMS_map, ERR
     
     def GoalOriented_filtering_visualization(self, OMS_map, masked_OMS):
         

@@ -4,10 +4,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from functions.loadDatasetFunctions import extract_single_event
+from functions.adaptFilteredData import structured_to_event_dict
 
 class RandomCropFiltering:
     def __init__(self, event, scale_factor, sensor_size, crop_size):
-        xs, ys, timestamps, pols = extract_single_event(event)
+        
+        # Already in classifier format
+        if isinstance(event, dict):
+            xs = event['x']
+            ys = event['y']
+            timestamps = event['t']
+            pols = event['p']
+
+        # Raw tonic event
+        else:
+            xs, ys, timestamps, pols = extract_single_event(event)
+
         self.events = np.zeros(len(xs), dtype=[
             ('x', np.int16),
             ('y', np.int16),
@@ -80,7 +92,10 @@ class RandomCropFiltering:
         print(f"Cropped events  = {N_cropped}")
         print(f"ERR            = {ERR_cropped:.4f}")
 
-        return events_cropped, ERR_cropped
+        # Convert to classifier-compatible format
+        events_dict = structured_to_event_dict(events_cropped)
+
+        return events_dict, ERR_cropped
     
     def events_to_image(self, events, sensor_size):
 

@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import time
 
-from functions.loadDatasetFunctions import extract_events
-
 # ------------------------
 # Event Converters
 # ------------------------
@@ -260,13 +258,13 @@ class ModelTrainer:
         return history
 
     # Confusion Matrix
-    def plot_confusion_matrix(model, dataloader, class_names, device):
-        model.eval()
+    def plot_confusion_matrix(self, dataloader, class_names):
+        self.model.eval()
         all_preds, all_labels = [], []
         with torch.no_grad():
             for data, labels in dataloader:
-                data, labels = data.to(device), labels.to(device)
-                outputs = model(data)
+                data, labels = data.to(self.device), labels.to(self.device)
+                outputs = self.model(data)
                 preds = torch.argmax(outputs, dim=1)
                 all_preds.append(preds.cpu().numpy())
                 all_labels.append(labels.cpu().numpy())
@@ -282,6 +280,15 @@ class ModelTrainer:
 # Main Execution
 # ------------------------
 def train_model(dataset_training, dataset_testing):
+    
+    # Extract events and labels
+    def extract_events(dataset):
+        events_list, labels_list = [], []
+        for i in range(len(dataset)):
+            events, label = dataset[i]
+            events_list.append({'x': events['x'], 'y': events['y'], 't': events['t'], 'p': events['p']})
+            labels_list.append(label)
+        return events_list, labels_list
 
     train_events, train_labels = extract_events(dataset_training)
     test_events, test_labels = extract_events(dataset_testing)
@@ -315,4 +322,4 @@ def train_model(dataset_training, dataset_testing):
     class_names = ["Hand Clapping", "Right Hand Wave", "Left Hand Wave",
                    "Right Arm CW", "Right Arm CCW", "Left Arm CW", "Left Arm CCW",
                    "Arm Roll", "Air Drums", "Air Guitar", "Other"]
-    trainer.plot_confusion_matrix(model, test_loader, class_names, device=trainer.device)
+    trainer.plot_confusion_matrix(test_loader, class_names)
