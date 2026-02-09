@@ -325,4 +325,4 @@ def train_model(dataset_training, dataset_testing):
                    "Arm Roll", "Air Drums", "Air Guitar", "Other"]
     trainer.plot_confusion_matrix(test_loader, class_names)
 
-    return best_accuracy, time
+    return best_accuracy, time_elapsed

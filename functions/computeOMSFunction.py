@@ -1,5 +1,4 @@
 from functions.OMS_helpers import *
-from functions.attention_helpers import AttentionModule
 
 def compute_OMS(window_pos, net_center, net_surround, config):
     OMSpos = torch.tensor(window_pos, dtype=torch.float32).unsqueeze(0).to(config.DEVICE)

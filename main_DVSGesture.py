@@ -12,7 +12,7 @@ from Filtering_techniques.TecniquesNotUsed.Random_filtering import RandomEventFi
 from Filtering_techniques.Denoise import Denoise
 from Filtering_techniques.RandomCropFiltering import RandomCropFiltering
 from Classification.ComplexCNN import train_model
-from functions.saveAndLoadFilteredData import save_filtered_dataset, FilteredNPZDataset
+from functions.saveAndLoadFilteredData import save_filtered_dataset, FilteredNPZDataset, write_filtering_results_to_file
 
 
 if __name__ == "__main__":
@@ -71,6 +71,8 @@ if __name__ == "__main__":
         save_dir="FilteredDatasets/OMS/test",
         prefix="test"
     )
+
+    write_filtering_results_to_file("OMS Filtering", average_ERR_OMS, time_OMS)
     
 
     # --- Adaptive Elbow Thresholding ---
@@ -114,6 +116,8 @@ if __name__ == "__main__":
         save_dir="FilteredDatasets/AdaptiveElbow/test",
         prefix="test"
     )
+
+    write_filtering_results_to_file("Adaptive Elbow Thresholding", average_ERR_adaptiveElbow, time_adaptiveElbow)
     
     # Results Adaptive Elbow Thresholding:
     # Average Filtering Error (ERR) across all events: 0.9540
@@ -160,6 +164,8 @@ if __name__ == "__main__":
         save_dir="FilteredDatasets/GoalOrientedThresholding/test",
         prefix="test"
     )
+
+    write_filtering_results_to_file("Goal Oriented Thresholding", average_ERR_GoalOriented, time_GoalOriented)
     
 
     # --- Mean and Standard Deviation Thresholding ---
@@ -202,6 +208,8 @@ if __name__ == "__main__":
         save_dir="FilteredDatasets/MeanStd/test",
         prefix="test"
     )
+
+    write_filtering_results_to_file("Mean-StdDev Thresholding", average_ERR_MeanStd, time_MeanStd)
 
     # --- Global Saliency Based Cropping ---
     
@@ -246,6 +254,7 @@ if __name__ == "__main__":
         prefix="test"
     )
 
+    write_filtering_results_to_file("Global Saliency Based Cropping", average_ERR_GlobalSaliencyCrop, time_GlobalSaliencyCrop)
 
     # --- Denoising Filtering ---
     
@@ -289,6 +298,7 @@ if __name__ == "__main__":
         prefix="test"
     )
     
+    write_filtering_results_to_file("Denoising Filtering", average_ERR_Denoised, time_Denoised) 
     
     # --- Random Cropping Filtering ---
 
@@ -335,7 +345,7 @@ if __name__ == "__main__":
         prefix="test"
     )
     
-
+    write_filtering_results_to_file("Random Crop Filtering", average_ERR_RandomCrop, time_RandomCrop)
 
 
 
