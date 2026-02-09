@@ -255,7 +255,7 @@ class ModelTrainer:
         print(f"Best Test Accuracy: {best_acc:.2f}%")
         if convergence_epoch: print(f"Converged at epoch {convergence_epoch}")
         else: print(f"Did not reach {convergence_threshold}% accuracy")
-        return history
+        return best_acc
 
     # Confusion Matrix
     def plot_confusion_matrix(self, dataloader, class_names):
@@ -314,9 +314,10 @@ def train_model(dataset_training, dataset_testing):
     model = DVSGestureCNN(num_input_channels=num_channels, num_classes=11)
     trainer = ModelTrainer(model)
     start_time = time.time()
-    history = trainer.train(train_loader, test_loader, num_epochs=20, lr=0.001)
+    best_accuracy = trainer.train(train_loader, test_loader, num_epochs=20, lr=0.001)
     end_time = time.time()
-    print(f"Training + evaluation time: {end_time - start_time:.2f} seconds")
+    time_elapsed = end_time - start_time
+    print(f"Training + evaluation time: {time_elapsed:.2f} seconds")
 
     # Confusion matrix
     class_names = ["Hand Clapping", "Right Hand Wave", "Left Hand Wave",
@@ -324,4 +325,4 @@ def train_model(dataset_training, dataset_testing):
                    "Arm Roll", "Air Drums", "Air Guitar", "Other"]
     trainer.plot_confusion_matrix(test_loader, class_names)
 
-    return history
+    return best_accuracy, time

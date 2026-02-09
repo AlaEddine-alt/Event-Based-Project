@@ -31,49 +31,7 @@ if __name__ == "__main__":
 
     scale_factor = 3
 
-    # --- Global Saliency Based Cropping ---
-    
-    filtered_events_GlobalSaliencyCrop_train = []
-    filtered_events_GlobalSaliencyCrop_test = []
-    Err_list_GlobalSaliencyCrop = []
-    Use_percentile = True
-    percentile = 90
-    threshold = 0.4
-
-    start_time_GlobalSaliencyCrop = time.time()
-    for event, label in train_dataset_raw:
-        # Initialize and run Global Saliency Based Cropping
-        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor)
-        filtered_events, OMS_norm, cropped_OMS_map, crop_box, ERR_global = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(Use_percentile, percentile, threshold)
-        # GlobalSaliencyCropper.MaskGlobalSaliency_filtering_visualization(cropped_OMS_map, OMS_norm)
-        filtered_events_GlobalSaliencyCrop_train.append((filtered_events, label))
-        Err_list_GlobalSaliencyCrop.append(ERR_global)  
-    for event, label in test_dataset_raw:
-        # Initialize and run Global Saliency Based Cropping
-        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor)
-        filtered_events, OMS_norm, cropped_OMS_map, crop_box, ERR_global = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(Use_percentile, percentile, threshold)
-        # GlobalSaliencyCropper.MaskGlobalSaliency_filtering_visualization(cropped_OMS_map, OMS_norm)
-        filtered_events_GlobalSaliencyCrop_test.append((filtered_events, label))
-        Err_list_GlobalSaliencyCrop.append(ERR_global) 
-    end_time_GlobalSaliencyCrop = time.time()
-    time_GlobalSaliencyCrop = end_time_GlobalSaliencyCrop - start_time_GlobalSaliencyCrop
-
-    average_ERR_GlobalSaliencyCrop = sum(Err_list_GlobalSaliencyCrop) / len(Err_list_GlobalSaliencyCrop)
-    print(f"\nAverage Global Saliency Crop Filtering Error (ERR) across all events: {average_ERR_GlobalSaliencyCrop:.4f}")
-    print(f"time Global Saliency Crop Filtering = {time_GlobalSaliencyCrop:.2f} seconds")
-    
-    save_filtered_dataset(
-        filtered_events_GlobalSaliencyCrop_train,
-        save_dir="FilteredDatasets/GlobalSaliencyCrop/train",
-        prefix="train"
-    )
-
-    save_filtered_dataset(
-        filtered_events_GlobalSaliencyCrop_test,
-        save_dir="FilteredDatasets/GlobalSaliencyCrop/test",
-        prefix="test"
-    )
-
+   
     # --- OMS Filtering ---
     
     filtered_events_OMS_train = []
@@ -116,7 +74,7 @@ if __name__ == "__main__":
     
 
     # --- Adaptive Elbow Thresholding ---
-    """
+    
     filtered_events_adaptiveElbow_train = []
     filtered_events_adaptiveElbow_test = []
     Err_list_adaptiveElbow = []
@@ -161,7 +119,7 @@ if __name__ == "__main__":
     # Average Filtering Error (ERR) across all events: 0.9540
     # time Adaptive Elbow filtering = 2024.04 seconds
 
-    """
+    
     # --- Goal Oriented Thresholding ---
     
     filtered_events_GoalOriented_train = []
@@ -193,13 +151,13 @@ if __name__ == "__main__":
 
     save_filtered_dataset(
         filtered_events_GoalOriented_train,
-        save_dir="FilteredDatasets/GoalOriented/train",
+        save_dir="FilteredDatasets/GoalOrientedThresholding/train",
         prefix="train"
     )
 
     save_filtered_dataset(
         filtered_events_GoalOriented_test,
-        save_dir="FilteredDatasets/GoalOriented/test",
+        save_dir="FilteredDatasets/GoalOrientedThresholding/test",
         prefix="test"
     )
     
@@ -240,14 +198,55 @@ if __name__ == "__main__":
     )
 
     save_filtered_dataset(
-        filtered_events_GoalOriented_test,
+        filtered_events_MeanStd_test,
         save_dir="FilteredDatasets/MeanStd/test",
         prefix="test"
     )
 
+    # --- Global Saliency Based Cropping ---
+    
+    filtered_events_GlobalSaliencyCrop_train = []
+    filtered_events_GlobalSaliencyCrop_test = []
+    Err_list_GlobalSaliencyCrop = []
+    Use_percentile = True
+    percentile = 90
+    threshold = 0.4
+
+    start_time_GlobalSaliencyCrop = time.time()
+    for event, label in train_dataset_raw:
+        # Initialize and run Global Saliency Based Cropping
+        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor)
+        filtered_events, OMS_norm, cropped_OMS_map, crop_box, ERR_global = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(Use_percentile, percentile, threshold)
+        # GlobalSaliencyCropper.MaskGlobalSaliency_filtering_visualization(cropped_OMS_map, OMS_norm)
+        filtered_events_GlobalSaliencyCrop_train.append((filtered_events, label))
+        Err_list_GlobalSaliencyCrop.append(ERR_global)  
+    for event, label in test_dataset_raw:
+        # Initialize and run Global Saliency Based Cropping
+        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor)
+        filtered_events, OMS_norm, cropped_OMS_map, crop_box, ERR_global = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(Use_percentile, percentile, threshold)
+        # GlobalSaliencyCropper.MaskGlobalSaliency_filtering_visualization(cropped_OMS_map, OMS_norm)
+        filtered_events_GlobalSaliencyCrop_test.append((filtered_events, label))
+        Err_list_GlobalSaliencyCrop.append(ERR_global) 
+    end_time_GlobalSaliencyCrop = time.time()
+    time_GlobalSaliencyCrop = end_time_GlobalSaliencyCrop - start_time_GlobalSaliencyCrop
+
+    average_ERR_GlobalSaliencyCrop = sum(Err_list_GlobalSaliencyCrop) / len(Err_list_GlobalSaliencyCrop)
+    print(f"\nAverage Global Saliency Crop Filtering Error (ERR) across all events: {average_ERR_GlobalSaliencyCrop:.4f}")
+    print(f"time Global Saliency Crop Filtering = {time_GlobalSaliencyCrop:.2f} seconds")
+    
+    save_filtered_dataset(
+        filtered_events_GlobalSaliencyCrop_train,
+        save_dir="FilteredDatasets/GlobalSaliencyBasedCropping/train",
+        prefix="train"
+    )
+
+    save_filtered_dataset(
+        filtered_events_GlobalSaliencyCrop_test,
+        save_dir="FilteredDatasets/GlobalSaliencyBasedCropping/test",
+        prefix="test"
+    )
 
 
-    """
     # --- Denoising Filtering ---
     
     filtered_events_Denoised_train = []
@@ -277,9 +276,20 @@ if __name__ == "__main__":
     average_ERR_Denoised = sum(Err_list_Denoised) / len(Err_list_Denoised)
     print(f"\nAverage Denoising Filtering Error (ERR) across all events: {average_ERR_Denoised:.4f}")
     print(f"time Denoising Filtering = {time_Denoised:.2f} seconds")
-    """
     
-    """
+    save_filtered_dataset(
+        filtered_events_Denoised_train,
+        save_dir="FilteredDatasets/Denoise/train",
+        prefix="train"
+    )
+
+    save_filtered_dataset(
+        filtered_events_Denoised_test,
+        save_dir="FilteredDatasets/Denoise/test",
+        prefix="test"
+    )
+    
+    
     # --- Random Cropping Filtering ---
 
     filtered_events_RandomCrop_train = []
@@ -324,11 +334,7 @@ if __name__ == "__main__":
         save_dir="FilteredDatasets/RandomCrop/test",
         prefix="test"
     )
-    """
     
-    # Training the ComplexCNN model
-
-    ## TODO: script classification
 
 
 
