@@ -51,3 +51,11 @@ def save_filtered_dataset(dataset, save_dir, prefix="sample"):
         )
 
     print(f"Saved {len(dataset)} samples to {save_dir}")
+
+
+    def write_results_to_file(method, history, time, filename="results.txt"):
+        with open(filename, "w", newline="") as f:
+            f.write(f"{method}\n")
+            for key, value in history.items():
+                f.write(f"{key}: {value}\n")
+            f.write(f"Training + evaluation time: {time:.2f} seconds\n")

@@ -328,37 +328,11 @@ if __name__ == "__main__":
     
     # Training the ComplexCNN model
 
-    """
-    When training, choose the filtered dataset you want to use 
+    ## TODO: script classification
 
-    - No filtering -> train_dataset_raw, test_dataset_raw
-    - OMS -> filtered_events_OMS_train, filtered_events_OMS_test
-    - Adaptive Elbow -> filtered_events_adaptiveElbow_train, filtered_events_adaptiveElbow_test
-    - Goal Oriented -> filtered_events_GoalOriented_train, filtered_events_Goal
-    - Mean-StdDev -> filtered_events_MeanStd_train, filtered_events_MeanStd_test
-    - Global Saliency Crop -> filtered_events_GlobalSaliencyCrop_train, filtered_events_GlobalSaliencyCrop_test
-    - Denoised -> filtered_events_Denoised_train, filtered_events_Denoised_test
-    - Random Crop -> filtered_events_RandomCrop_train, filtered_events_RandomCrop_test
-    """
 
-    # Change the dataset used for training and testing in the train_model function accordingly
 
-    # Adaptive Elbow
-    train_dataset = FilteredNPZDataset("FilteredDatasets/AdaptiveElbow/train")
-    test_dataset  = FilteredNPZDataset("FilteredDatasets/AdaptiveElbow/test")
-    # Training + evaluation time: 265.09 secondss
-    # Best Test Accuracy: 45.45%
 
-    # Random Crop 
-    # train_dataset = FilteredNPZDataset("FilteredDatasets/RandomCrop/train")
-    # test_dataset  = FilteredNPZDataset("FilteredDatasets/RandomCrop/test")
-
-    start_time_training = time.time()
-    
-    train_model(train_dataset, test_dataset)
-    end_time_training = time.time()
-    time_training = end_time_training - start_time_training
-    print(f"\nTime taken for training the ComplexCNN model: {time_training:.2f} seconds")
 
 
 

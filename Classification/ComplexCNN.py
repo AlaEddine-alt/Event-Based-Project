@@ -323,3 +323,5 @@ def train_model(dataset_training, dataset_testing):
                    "Right Arm CW", "Right Arm CCW", "Left Arm CW", "Left Arm CCW",
                    "Arm Roll", "Air Drums", "Air Guitar", "Other"]
     trainer.plot_confusion_matrix(test_loader, class_names)
+
+    return history
