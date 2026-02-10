@@ -56,6 +56,7 @@ class StackedFrameConverter:
                 np.add.at(frames[i*2], (y_i[p_i==1], x_i[p_i==1]), 1)
                 np.add.at(frames[i*2+1], (y_i[p_i==0], x_i[p_i==0]), 1)
         return torch.from_numpy(frames)
+    
 
 class TimeSurfaceConverter:
     """Time surface: last event timestamp per pixel"""
@@ -295,10 +296,10 @@ def train_model(dataset_training, dataset_testing):
 
     # Choose converter
     
-    #converter = EventFrameConverter(height=128, width=128)
+    converter = EventFrameConverter(height=128, width=128)
     #converter = StackedFrameConverter(128, 128, num_frames=5)
     #converter = TimeSurfaceConverter(128, 128, tau=50000)
-    converter = VoxelGridConverter(128, 128, num_bins=5)
+    #converter = VoxelGridConverter(128, 128, num_bins=5)
     
     dummy_event = {'x': np.array([0]), 'y': np.array([0]), 't': np.array([0]), 'p': np.array([1])}
     num_channels = converter.convert(dummy_event).shape[0]
