@@ -79,14 +79,11 @@ class MaskMeanStandardDeviation:
         mu_noise = np.mean(oms_flat)
         sigma_noise = np.std(oms_flat)
         
-        # Define the scaling factor (k). 3 is the standard for strong outlier detection.
-        k_sigma = 2.0 
-        
         # Calculate the statistical threshold (Theta_mask = mu + k * sigma)
         threshold_value = mu_noise + k_sigma * sigma_noise
         
-        print(f"OMS Stats: Mean={mu_noise:.4f}, StdDev={sigma_noise:.4f}")
-        print(f"Calculated Mask Threshold (k={k_sigma}): {threshold_value:.4f}")
+        # print(f"OMS Stats: Mean={mu_noise:.4f}, StdDev={sigma_noise:.4f}")
+        # print(f"Calculated Mask Threshold (k={k_sigma}): {threshold_value:.4f}")
         
         # Create Binary Mask (M): 1=Salient, 0=Suppress
         M = (self.OMS_map > threshold_value).astype(np.uint8)

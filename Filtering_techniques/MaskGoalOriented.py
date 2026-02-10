@@ -86,13 +86,12 @@ class MaskGoalOrientedOMSFiltering:
         """
         # Flatten and compute percentile value
         thr = np.percentile(self.OMS_map, 100 - keep_percent)
-        # thr, keep_percent = adaptive_elbow_threshold(OMS_map)
 
         # Create mask: True for pixels we keep
         mask = self.OMS_map >= thr
 
-        print(f"[Thresholding] Keep top {keep_percent}% → threshold = {thr:.4f}")
-        print(f"[Thresholding] Pixels kept: {mask.sum()}  /  {mask.size}")
+        # print(f"[Thresholding] Keep top {keep_percent}% → threshold = {thr:.4f}")
+        # print(f"[Thresholding] Pixels kept: {mask.sum()}  /  {mask.size}")
 
         return mask, thr
 
@@ -108,7 +107,7 @@ class MaskGoalOrientedOMSFiltering:
         
         for x, y, t, p in zip(self.xs, self.ys, self.timestamps, self.pols):
             if 0 <= x < max_x_mask and 0 <= y < max_y_mask:
-                if masked_OMS[x, y] > 0:   # CORRETTO: [y, x]
+                if masked_OMS[y, x] > 0:
                     filtered_events.append((x, y, t, p))
 
         # print(f"Filtered events: {len(filtered_events)} (out of {len(self.xs)})")
@@ -121,7 +120,7 @@ class MaskGoalOrientedOMSFiltering:
     
     def GoalOriented_filtering_visualization(self, OMS_map, masked_OMS):
         
-        print("OMS map stats:", OMS_map.min(), OMS_map.max(), OMS_map.mean())
+        # print("OMS map stats:", OMS_map.min(), OMS_map.max(), OMS_map.mean())
 
         plt.figure(figsize=(6,4))
         plt.hist(OMS_map.flatten(), bins=100, color='gray')

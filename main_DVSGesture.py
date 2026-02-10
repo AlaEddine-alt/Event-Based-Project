@@ -12,7 +12,8 @@ from Filtering_techniques.TecniquesNotUsed.Random_filtering import RandomEventFi
 from Filtering_techniques.Denoise import Denoise
 from Filtering_techniques.RandomCropFiltering import RandomCropFiltering
 from Classification.ComplexCNN import train_model
-from functions.saveAndLoadFilteredData import save_filtered_dataset, FilteredNPZDataset, write_filtering_results_to_file
+from functions.saveAndLoadFilteredData import save_filtered_dataset
+from functions.writeResultsFunctions import write_filtering_results_to_file
 
 
 if __name__ == "__main__":

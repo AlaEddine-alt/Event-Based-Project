@@ -2,8 +2,9 @@
 import time
 import os
 from Classification.ComplexCNN import train_model
-from functions.saveAndLoadFilteredData import write_results_to_file, FilteredNPZDataset
+from functions.saveAndLoadFilteredData import FilteredNPZDataset
 from functions.loadDatasetFunctions import DVSGestureNPYDataset
+from functions.writeResultsFunctions import write_results_to_file
 
 """
 When training, choose the filtered dataset you want to use 

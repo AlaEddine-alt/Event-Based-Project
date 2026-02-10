@@ -52,17 +52,3 @@ def save_filtered_dataset(dataset, save_dir, prefix="sample"):
 
     print(f"Saved {len(dataset)} samples to {save_dir}")
 
-
-def write_results_to_file(method, best_accuracy, time, filename="results.txt"):
-    with open(filename, "a", newline="") as f:
-        f.write("--------------------------------\n")
-        f.write(f"{method}\n")
-        f.write(f"Test Accuracy: {best_accuracy:.2f}%\n")
-        f.write(f"Training + evaluation time: {time:.2f} seconds\n")
-
-def write_filtering_results_to_file(method, err, time, filename="filtering_results.txt"):
-    with open(filename, "a", newline="") as f:
-        f.write("--------------------------------\n")
-        f.write(f"{method}\n")
-        f.write(f"Average Filtering Error (ERR): {err:.4f}\n")
-        f.write(f"Filtering time: {time:.2f} seconds\n")

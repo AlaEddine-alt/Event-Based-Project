@@ -23,9 +23,9 @@ class Config:
     DEVICE = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
 
     OMS_PARAMS = {
-        'size_krn_center': 8,
+        'size_krn_center': 7,
         'sigma_center': 1,
-        'size_krn_surround': 8,
+        'size_krn_surround': 7,
         'sigma_surround': 4,
         'threshold': 0.03,
         'tau_memOMS': 0.1,

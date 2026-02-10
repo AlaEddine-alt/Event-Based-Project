@@ -87,17 +87,17 @@ class MaskGlobalSaliencyBasedCropping():
 
         if use_percentile:
             thr = np.percentile(OMS_norm, percentile)
-            print(f"Using percentile threshold = {thr:.4f}")
+            # print(f"Using percentile threshold = {thr:.4f}")
         else:
             thr = threshold  # fixed threshold
-            print(f"Using fixed threshold = {thr}")
+            # print(f"Using fixed threshold = {thr}")
 
         # Create binary mask of salient pixels
         saliency_mask = OMS_norm >= thr
 
-        print(f"Salient area: {np.sum(saliency_mask)} pixels "
-            f"(out of {saliency_mask.size}, "
-            f"{100*np.mean(saliency_mask):.2f}% of the image)")
+        # print(f"Salient area: {np.sum(saliency_mask)} pixels "
+            #f"(out of {saliency_mask.size}, "
+            #f"{100*np.mean(saliency_mask):.2f}% of the image)")
 
         # Step 4: Compute bounding box of salient region
 
@@ -146,7 +146,13 @@ class MaskGlobalSaliencyBasedCropping():
         cropped_event_map = self.window_pos[y_min:y_max+1, x_min:x_max+1]
         cropped_OMS_map = OMS_norm[y_min:y_max+1, x_min:x_max+1]
 
-        filred_events = inside_crop
+        filtered_events = [
+        (x, y, t, p)
+        for x, y, t, p, keep in zip(
+            self.xs, self.ys, self.timestamps, self.pols, inside_crop
+        )
+        if keep
+        ]
 
         crop_box = {
             "x_min": int(x_min),
@@ -155,9 +161,9 @@ class MaskGlobalSaliencyBasedCropping():
             "y_max": int(y_max)
         }
 
-        print("Saved crop box:", crop_box)
+        # print("Saved crop box:", crop_box)
 
-        event_dict = tuple_events_to_event_dict(filred_events)
+        event_dict = tuple_events_to_event_dict(filtered_events)
 
         return event_dict, OMS_norm, cropped_OMS_map, crop_box, ERR
     
@@ -183,7 +189,7 @@ class MaskGlobalSaliencyBasedCropping():
         plt.tight_layout()
         plt.show()
 
-        print("OMS map stats:", self.OMS_map.min(), self.OMS_map.max(), self.OMS_map.mean())
+        # print("OMS map stats:", self.OMS_map.min(), self.OMS_map.max(), self.OMS_map.mean())
 
         plt.figure(figsize=(6,4))
         plt.hist(self.OMS_map.flatten(), bins=100, color='gray')

@@ -8,6 +8,6 @@ def compute_OMS(window_pos, net_center, net_surround, config):
 
     OMSpos_map = OMSpos_map.squeeze(0).squeeze(0).cpu().detach().numpy()
 
-    print("OMS map stats:", OMSpos_map.min(), OMSpos_map.max(), OMSpos_map.mean())
+    # print("OMS map stats:", OMSpos_map.min(), OMSpos_map.max(), OMSpos_map.mean())
     
     return OMSpos_map, indexes_pos
