@@ -56,6 +56,7 @@ class StackedFrameConverter:
                 np.add.at(frames[i*2], (y_i[p_i==1], x_i[p_i==1]), 1)
                 np.add.at(frames[i*2+1], (y_i[p_i==0], x_i[p_i==0]), 1)
         return torch.from_numpy(frames)
+    
 
 class TimeSurfaceConverter:
     """Time surface: last event timestamp per pixel"""
@@ -67,19 +68,27 @@ class TimeSurfaceConverter:
     def convert(self, events):
         if len(events['x']) == 0:
             return torch.zeros((2, self.height, self.width), dtype=torch.float32)
+
         x = events['x'].astype(np.int32)
         y = events['y'].astype(np.int32)
         t = events['t']
-        p = events['p'].astype(np.int32)
+        p = events['p']
+
         valid = (x >= 0) & (x < self.width) & (y >= 0) & (y < self.height)
         x, y, t, p = x[valid], y[valid], t[valid], p[valid]
+
+        # 🔥 FIX: force polarity into {0,1}
+        p = (p > 0).astype(np.int32)
+
         surface = np.zeros((2, self.height, self.width), dtype=np.float32)
-        t_max = t.max() if len(t) > 0 else 0
+        t_max = t.max()
+
         for i in range(len(x)):
-            channel = p[i]
             dt = t_max - t[i]
-            surface[channel, y[i], x[i]] = np.exp(-dt / self.tau)
+            surface[p[i], y[i], x[i]] = np.exp(-dt / self.tau)
+
         return torch.from_numpy(surface)
+
 
 class VoxelGridConverter:
     """Voxel grid: temporal bins, polarity weighted"""
@@ -297,8 +306,8 @@ def train_model(dataset_training, dataset_testing):
     
     #converter = EventFrameConverter(height=128, width=128)
     #converter = StackedFrameConverter(128, 128, num_frames=5)
-    #converter = TimeSurfaceConverter(128, 128, tau=50000)
-    converter = VoxelGridConverter(128, 128, num_bins=5)
+    converter = TimeSurfaceConverter(128, 128, tau=50000)
+    #converter = VoxelGridConverter(128, 128, num_bins=5)
     
     dummy_event = {'x': np.array([0]), 'y': np.array([0]), 't': np.array([0]), 'p': np.array([1])}
     num_channels = converter.convert(dummy_event).shape[0]
