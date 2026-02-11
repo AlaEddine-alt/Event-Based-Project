@@ -26,8 +26,9 @@ ENV/
 Datasets/
 DVSGestureDownsampled/
 FilteredDatasets/
+FilteredGoalOrientedTuning/
 DVSGestureDownsampled.zip
-*.txt
+
 Dsec.txt
 middleDb.txt
 

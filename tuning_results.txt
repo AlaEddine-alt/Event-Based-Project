@@ -1,0 +1,30 @@
+--------------------------------
+Goal Oriented Thresholding - Parameter: 1
+Average Event Reduction Ratio (ERR): 0.8910
+Filtering time: 1858.42 seconds
+Test Accuracy: 44.50%
+Training time: 180.94 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 2
+Average Event Reduction Ratio (ERR): 0.8499
+Filtering time: 2088.46 seconds
+Test Accuracy: 44.02%
+Training time: 169.10 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 5
+Average Event Reduction Ratio (ERR): 0.8301
+Filtering time: 1763.46 seconds
+Test Accuracy: 43.06%
+Training time: 159.96 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 10
+Average Event Reduction Ratio (ERR): 0.8299
+Filtering time: 1765.86 seconds
+Test Accuracy: 45.45%
+Training time: 160.31 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 20
+Average Event Reduction Ratio (ERR): 0.8299
+Filtering time: 1766.87 seconds
+Test Accuracy: 48.80%
+Training time: 163.59 seconds

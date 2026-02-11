@@ -306,8 +306,8 @@ def train_model(dataset_training, dataset_testing):
     
     #converter = EventFrameConverter(height=128, width=128)
     #converter = StackedFrameConverter(128, 128, num_frames=5)
-    converter = TimeSurfaceConverter(128, 128, tau=50000)
-    #converter = VoxelGridConverter(128, 128, num_bins=5)
+    #converter = TimeSurfaceConverter(128, 128, tau=50000)
+    converter = VoxelGridConverter(128, 128, num_bins=5)
     
     dummy_event = {'x': np.array([0]), 'y': np.array([0]), 't': np.array([0]), 'p': np.array([1])}
     num_channels = converter.convert(dummy_event).shape[0]
@@ -332,6 +332,6 @@ def train_model(dataset_training, dataset_testing):
     class_names = ["Hand Clapping", "Right Hand Wave", "Left Hand Wave",
                    "Right Arm CW", "Right Arm CCW", "Left Arm CW", "Left Arm CCW",
                    "Arm Roll", "Air Drums", "Air Guitar", "Other"]
-    trainer.plot_confusion_matrix(test_loader, class_names)
+    # trainer.plot_confusion_matrix(test_loader, class_names)
 
     return best_accuracy, time_elapsed

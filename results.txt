@@ -1,0 +1,12 @@
+ComplexCNN - Raw - Stacked Frame
+Test Accuracy: 40.67%
+Training + evaluation time: 305.26 seconds
+
+ComplexCNN - Raw - Event Frame
+Test Accuracy: 43.54%
+Training + evaluation time: 275.56 seconds
+
+--------------------------------
+ComplexCNN - Raw
+Test Accuracy: 71.29%
+Training + evaluation time: 274.74 seconds
