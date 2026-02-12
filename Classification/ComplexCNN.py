@@ -59,7 +59,7 @@ class StackedFrameConverter:
     
 
 class TimeSurfaceConverter:
-    """Time surface: last event timestamp per pixel"""
+    # Time surface: last event timestamp per pixel
     def __init__(self, height=128, width=128, tau=50000):
         self.height = height
         self.width = width
@@ -77,7 +77,7 @@ class TimeSurfaceConverter:
         valid = (x >= 0) & (x < self.width) & (y >= 0) & (y < self.height)
         x, y, t, p = x[valid], y[valid], t[valid], p[valid]
 
-        # 🔥 FIX: force polarity into {0,1}
+        # force polarity into {0,1}
         p = (p > 0).astype(np.int32)
 
         surface = np.zeros((2, self.height, self.width), dtype=np.float32)
@@ -285,6 +285,20 @@ class ModelTrainer:
         disp.plot(ax=ax, cmap="Blues", xticks_rotation=45)
         plt.show()
 
+
+def compute_sparsity(dataloader, device='cuda' if torch.cuda.is_available() else 'cpu'):
+    total_elements = 0
+    total_nonzero = 0
+    
+    for data, _ in dataloader:
+        data = data.to(device)
+        
+        total_elements += data.numel()
+        total_nonzero += torch.count_nonzero(data).item()
+    
+    sparsity = 1 - (total_nonzero / total_elements)
+    return sparsity
+
 # ------------------------
 # Main Execution
 # ------------------------
@@ -306,8 +320,8 @@ def train_model(dataset_training, dataset_testing):
     
     #converter = EventFrameConverter(height=128, width=128)
     #converter = StackedFrameConverter(128, 128, num_frames=5)
-    #converter = TimeSurfaceConverter(128, 128, tau=50000)
-    converter = VoxelGridConverter(128, 128, num_bins=5)
+    converter = TimeSurfaceConverter(128, 128, tau=50000)
+    #converter = VoxelGridConverter(128, 128, num_bins=5)
     
     dummy_event = {'x': np.array([0]), 'y': np.array([0]), 't': np.array([0]), 'p': np.array([1])}
     num_channels = converter.convert(dummy_event).shape[0]
@@ -333,5 +347,13 @@ def train_model(dataset_training, dataset_testing):
                    "Right Arm CW", "Right Arm CCW", "Left Arm CW", "Left Arm CCW",
                    "Arm Roll", "Air Drums", "Air Guitar", "Other"]
     # trainer.plot_confusion_matrix(test_loader, class_names)
+
+    print("Computing sparsity...")
+
+    train_sparsity = compute_sparsity(train_loader)
+    test_sparsity = compute_sparsity(test_loader)
+
+    print(f"Train Sparsity: {train_sparsity*100:.2f}%")
+    print(f"Test Sparsity: {test_sparsity*100:.2f}%")
 
     return best_accuracy, time_elapsed

@@ -232,8 +232,6 @@ if __name__ == "__main__":
 
     # Parameter tuning for Goal Oriented Thresholding
     # parameters_GoalOrientedThresholding = [1, 2, 5, 10, 20, 30, 40]
-    #parameters_GoalOrientedThresholding = [2, 5, 10, 20, 30, 40]
-    # parameters_GoalOrientedThresholding = [5] # Keep percentage values to evaluate (e.g., 1%, 5%, 10%, ..., 50%)
  
     #result_GoalOrientedThresholding = parameter_tuning_pipeline(parameters_GoalOrientedThresholding, train_dataset_raw, test_dataset_raw, tecnique="Goal Oriented Thresholding", filtered_root="FilteredGoalOrientedTuning")
     

@@ -82,7 +82,6 @@ class OMSFiltering:
         net_center, net_surround = initialize_oms(self.config.DEVICE, self.config.OMS_PARAMS)
         net_attention = AttentionModule(**self.config.ATTENTION_PARAMS)
 
-
         OMS_map, indexes = compute_OMS(self.window_pos, net_center, net_surround, self.config)
 
         # --- Saliency Map Retrieval and Normalization ---
