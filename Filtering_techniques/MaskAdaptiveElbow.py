@@ -108,19 +108,29 @@ class AdaptiveElbowOMSFiltering:
         return threshold_value, keep_percent
 
     def Albowdaptive_thresholding(self):
-        
-        # ----- Adaptive Elbow Method Thresholding -----
-        mask, thr_value = self.adaptive_elbow_threshold()
 
-        # Optional: apply mask to visualize
+        threshold_value, keep_percent = self.adaptive_elbow_threshold()
+
+        # if only zeros and threshold is none
+        if threshold_value is None:
+            print("[AUTO] Too few OMS values → no filtering applied")
+            masked_OMS = self.OMS_map.copy()
+            ERR = 0.0
+            events_dict = tuple_events_to_event_dict(
+                list(zip(self.xs, self.ys, self.timestamps, self.pols))
+            )
+            return events_dict, masked_OMS, self.OMS_map, ERR
+
+        # build binary mask
+        mask = self.OMS_map >= threshold_value
         masked_OMS = self.OMS_map * mask
 
         filtered_events = []
         max_x_mask, max_y_mask = masked_OMS.shape
-        
+
         for x, y, t, p in zip(self.xs, self.ys, self.timestamps, self.pols):
             if 0 <= x < max_x_mask and 0 <= y < max_y_mask:
-                if masked_OMS[x, y] > 0:   # CORRETTO: [y, x]
+                if mask[x, y]:
                     filtered_events.append((x, y, t, p))
 
         ERR = 1.0 - (len(filtered_events) / len(self.xs))
@@ -129,8 +139,9 @@ class AdaptiveElbowOMSFiltering:
         print(f"Filtering ERR: {ERR:.4f}")
 
         events_dict = tuple_events_to_event_dict(filtered_events)
-        
+
         return events_dict, masked_OMS, self.OMS_map, ERR
+
 
     def AdaptiveElbow_filtering_visualization(self, OMS_map, masked_OMS):
         
