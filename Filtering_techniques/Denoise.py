@@ -19,6 +19,8 @@ class Denoise:
         self.events['y'] = ys
         self.events['t'] = timestamps
         self.events['p'] = pols
+        # Ensure chronological order
+        self.events.sort(order="t")
         self.scale_factor = scale_factor
         self.N_original = len(self.events)
         self.xs = xs
@@ -28,30 +30,44 @@ class Denoise:
         self.window_original = self.build_event_map(self.events)
 
     def build_event_map(self, evts):
-        max_x = int(self.xs.max()) + 1
-        max_y = int(self.ys.max()) + 1
+        xs_filtered = evts['x']
+        ys_filtered = evts['y']
+        max_x = int(xs_filtered.max()) + 1
+        max_y = int(ys_filtered.max()) + 1
         window_pos = np.zeros((max_y, max_x), dtype=np.uint16)
-        for x, y in zip(self.xs, self.ys):
+        for x, y in zip(xs_filtered, ys_filtered):
             window_pos[y, x] += 1
         return window_pos
 
     # DENOISE FUNCTION from Tonic github
     def denoise_numpy(self, filter_time=10000):
-        events_copy = np.zeros_like(self.events)
+        """Drops events that are 'not sufficiently connected to other events in the recording.' In
+        practise that means that an event is dropped if no other event occured within a spatial
+        neighbourhood of 1 pixel and a temporal neighbourhood of filter_time time units. Useful to
+        filter noisy recordings where events occur isolated in time.
+
+        Parameters:
+            events: ndarray of shape [num_events, num_event_channels]
+            filter_time: maximum temporal distance to next event, otherwise dropped.
+                        Lower values will mean higher constraints, therefore less events.
+
+        Returns:
+            filtered set of events.
+        """
+        events = self.events
+        assert "x" and "y" and "t" in events.dtype.names
+
+        events_copy = np.zeros_like(events)
         copy_index = 0
-
-        width = int(self.events["x"].max()) + 1
-        height = int(self.events["y"].max()) + 1
-
+        width = int(events["x"].max()) + 1
+        height = int(events["y"].max()) + 1
         timestamp_memory = np.zeros((width, height)) + filter_time
 
-        for event in self.events:
+        for event in events:
             x = int(event["x"])
             y = int(event["y"])
             t = event["t"]
-
             timestamp_memory[x, y] = t + filter_time
-
             if (
                 (x > 0 and timestamp_memory[x - 1, y] > t)
                 or (x < width - 1 and timestamp_memory[x + 1, y] > t)
@@ -103,3 +119,4 @@ class Denoise:
 
         plt.tight_layout()
         plt.show()
+
