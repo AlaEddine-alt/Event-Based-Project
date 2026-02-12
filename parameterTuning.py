@@ -37,7 +37,7 @@ def GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, keep_pe
     time_GoalOriented = end_time_GoalOriented - start_time_GoalOriented
 
     average_ERR_GoalOriented = sum(Err_list_GoalOriented) / len(Err_list_GoalOriented)
-    print(f"\nAverage Goal-Oriented Filtering Error (ERR) across all events: {average_ERR_GoalOriented:.4f}")
+    print(f"\nAverage Goal-Oriented Event Reduction Ratio (ERR) across all events: {average_ERR_GoalOriented:.4f}")
     print(f"time Goal Oriented Filtering = {time_GoalOriented:.2f} seconds")
 
     save_filtered_dataset(
@@ -80,7 +80,7 @@ def MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, k_sigma, fil
     time_MeanStd = end_time_MeanStd - start_time_MeanStd
 
     average_ERR_MeanStd = sum(Err_list_MeanStd) / len(Err_list_MeanStd)
-    print(f"\nAverage Mean-StdDev Filtering Error (ERR) across all events: {average_ERR_MeanStd:.4f}")
+    print(f"\nAverage Mean-StdDev Event Reduction Ratio (ERR) across all events: {average_ERR_MeanStd:.4f}")
     print(f"time Mean-StdDev Filtering = {time_MeanStd:.2f} seconds")
     
     save_filtered_dataset(
@@ -128,7 +128,7 @@ def GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, use_p
     time_GlobalSaliencyCrop = end_time_GlobalSaliencyCrop - start_time_GlobalSaliencyCrop
 
     average_ERR_GlobalSaliencyCrop = sum(Err_list_GlobalSaliencyCrop) / len(Err_list_GlobalSaliencyCrop)
-    print(f"\nAverage Global Saliency Crop Filtering Error (ERR) across all events: {average_ERR_GlobalSaliencyCrop:.4f}")
+    print(f"\nAverage Global Saliency Crop Event Reduction Ratio (ERR) across all events: {average_ERR_GlobalSaliencyCrop:.4f}")
     print(f"time Global Saliency Crop Filtering = {time_GlobalSaliencyCrop:.2f} seconds")
     
     if use_percentile:
@@ -150,11 +150,18 @@ def GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, use_p
         prefix="test"
     )
 
+    return average_ERR_GlobalSaliencyCrop, time_GlobalSaliencyCrop
+
 
 def evaluate_parameters(kp, filtered_root = "FilterTuning"):
 
-    train_dataset = FilteredNPZDataset(f"{filtered_root}/Threshold_{kp}/train")
-    test_dataset  = FilteredNPZDataset(f"{filtered_root}/Threshold_{kp}/test")
+    if(filtered_root == "FilteredGlobalSaliencyPercentileTuning"):
+        train_dataset = FilteredNPZDataset(f"{filtered_root}/Percentile_{kp}/train")
+        test_dataset  = FilteredNPZDataset(f"{filtered_root}/Percentile_{kp}/test")
+    else:
+        train_dataset = FilteredNPZDataset(f"{filtered_root}/Threshold_{kp}/train")
+        test_dataset  = FilteredNPZDataset(f"{filtered_root}/Threshold_{kp}/test")
+
     acc, train_time = train_model(train_dataset, test_dataset)
 
     return acc, train_time
@@ -232,9 +239,9 @@ if __name__ == "__main__":
     
 
     # Parameter tuning for Mean Standard Deviation Thresholding
-    parameters_MeanStd = [0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0]
+    #parameters_MeanStd = [0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0]
 
-    results_MeanStd = parameter_tuning_pipeline(parameters_MeanStd, train_dataset_raw, test_dataset_raw, tecnique="Mean Standard Deviation", filtered_root="FilteredMeanStdTuning")
+    #results_MeanStd = parameter_tuning_pipeline(parameters_MeanStd, train_dataset_raw, test_dataset_raw, tecnique="Mean Standard Deviation", filtered_root="FilteredMeanStdTuning")
 
     # Parameter tuning for Global Saliency-based Cropping
     parameters_percentile_GlobalSaliency = [85, 88, 90, 92, 95]

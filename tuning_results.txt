@@ -28,3 +28,93 @@ Average Event Reduction Ratio (ERR): 0.8299
 Filtering time: 1766.87 seconds
 Test Accuracy: 48.80%
 Training time: 163.59 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 0.75
+Average Event Reduction Ratio (ERR): 0.8394
+Filtering time: 1312.13 seconds
+Test Accuracy: 45.93%
+Training time: 175.24 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 1.0
+Average Event Reduction Ratio (ERR): 0.8409
+Filtering time: 1310.87 seconds
+Test Accuracy: 48.33%
+Training time: 180.10 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 1.25
+Average Event Reduction Ratio (ERR): 0.8452
+Filtering time: 1466.77 seconds
+Test Accuracy: 51.67%
+Training time: 182.24 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 1.5
+Average Event Reduction Ratio (ERR): 0.8505
+Filtering time: 1357.72 seconds
+Test Accuracy: 49.28%
+Training time: 173.46 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 2.0
+Average Event Reduction Ratio (ERR): 0.8616
+Filtering time: 1248.53 seconds
+Test Accuracy: 44.98%
+Training time: 174.42 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 2.5
+Average Event Reduction Ratio (ERR): 0.8751
+Filtering time: 1245.78 seconds
+Test Accuracy: 47.37%
+Training time: 176.56 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 3.0
+Average Event Reduction Ratio (ERR): 0.8883
+Filtering time: 1243.52 seconds
+Test Accuracy: 44.50%
+Training time: 178.36 seconds
+--------------------------------
+Global Saliency Crop use percentile - Parameter: 85
+Average Event Reduction Ratio (ERR): 0.0000
+Filtering time: 1461.96 seconds
+Test Accuracy: 89.47%
+Training time: 205.81 seconds
+--------------------------------
+Global Saliency Crop use percentile - Parameter: 88
+Average Event Reduction Ratio (ERR): 0.0000
+Filtering time: 1464.07 seconds
+Test Accuracy: 90.91%
+Training time: 203.64 seconds
+--------------------------------
+Global Saliency Crop use percentile - Parameter: 90
+Average Event Reduction Ratio (ERR): 0.0001
+Filtering time: 1461.61 seconds
+Test Accuracy: 91.39%
+Training time: 209.82 seconds
+--------------------------------
+Global Saliency Crop use percentile - Parameter: 92
+Average Event Reduction Ratio (ERR): 0.0003
+Filtering time: 1504.06 seconds
+Test Accuracy: 89.47%
+Training time: 206.03 seconds
+--------------------------------
+Global Saliency Crop use percentile - Parameter: 95
+Average Event Reduction Ratio (ERR): 0.0147
+Filtering time: 1468.72 seconds
+Test Accuracy: 88.04%
+Training time: 204.08 seconds
+--------------------------------
+Global Saliency Crop not use percentile - Parameter: 0.15
+Average Event Reduction Ratio (ERR): 0.4300
+Filtering time: 1384.76 seconds
+Test Accuracy: 70.33%
+Training time: 186.78 seconds
+--------------------------------
+Global Saliency Crop not use percentile - Parameter: 0.2
+Average Event Reduction Ratio (ERR): 0.4741
+Filtering time: 1377.72 seconds
+Test Accuracy: 63.16%
+Training time: 184.84 seconds
+--------------------------------
+Global Saliency Crop not use percentile - Parameter: 0.25
+Average Event Reduction Ratio (ERR): 0.5204
+Filtering time: 1374.89 seconds
+Test Accuracy: 63.16%
+Training time: 187.03 seconds

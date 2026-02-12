@@ -61,7 +61,7 @@ if __name__ == "__main__":
     time_OMS = end_time_OMS - start_time_OMS
 
     average_ERR_OMS = sum(Err_list_OMS) / len(Err_list_OMS)
-    print(f"\nAverage OMS Filtering Error (ERR) across all events: {average_ERR_OMS:.4f}")
+    print(f"\nAverage OMS Event Reduction Ratio (ERR) across all events: {average_ERR_OMS:.4f}")
     print(f"time OMS filtering = {time_OMS:.2f} seconds")
     
     save_filtered_dataset(
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     time_adaptiveElbow = end_time_adaptiveElbow - start_time_adaptiveElbow
 
     average_ERR_adaptiveElbow = sum(Err_list_adaptiveElbow) / len(Err_list_adaptiveElbow)
-    print(f"\nAverage Filtering Error (ERR) across all events: {average_ERR_adaptiveElbow:.4f}")
+    print(f"\nAverage Event Reduction Ratio (ERR) across all events: {average_ERR_adaptiveElbow:.4f}")
     print(f"time Adaptive Elbow filtering = {time_adaptiveElbow:.2f} seconds")
 
     save_filtered_dataset(
@@ -154,7 +154,7 @@ if __name__ == "__main__":
     time_GoalOriented = end_time_GoalOriented - start_time_GoalOriented
 
     average_ERR_GoalOriented = sum(Err_list_GoalOriented) / len(Err_list_GoalOriented)
-    print(f"\nAverage Goal-Oriented Filtering Error (ERR) across all events: {average_ERR_GoalOriented:.4f}")
+    print(f"\nAverage Goal-Oriented Event Reduction Ratio (ERR) across all events: {average_ERR_GoalOriented:.4f}")
     print(f"time Goal Oriented Filtering = {time_GoalOriented:.2f} seconds")
 
     save_filtered_dataset(
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     time_MeanStd = end_time_MeanStd - start_time_MeanStd
 
     average_ERR_MeanStd = sum(Err_list_MeanStd) / len(Err_list_MeanStd)
-    print(f"\nAverage Mean-StdDev Filtering Error (ERR) across all events: {average_ERR_MeanStd:.4f}")
+    print(f"\nAverage Mean-StdDev Event Reduction Ratio (ERR) across all events: {average_ERR_MeanStd:.4f}")
     print(f"time Mean-StdDev Filtering = {time_MeanStd:.2f} seconds")
     
     save_filtered_dataset(
@@ -243,7 +243,7 @@ if __name__ == "__main__":
     time_GlobalSaliencyCrop = end_time_GlobalSaliencyCrop - start_time_GlobalSaliencyCrop
 
     average_ERR_GlobalSaliencyCrop = sum(Err_list_GlobalSaliencyCrop) / len(Err_list_GlobalSaliencyCrop)
-    print(f"\nAverage Global Saliency Crop Filtering Error (ERR) across all events: {average_ERR_GlobalSaliencyCrop:.4f}")
+    print(f"\nAverage Global Saliency Crop Event Reduction Ratio (ERR) across all events: {average_ERR_GlobalSaliencyCrop:.4f}")
     print(f"time Global Saliency Crop Filtering = {time_GlobalSaliencyCrop:.2f} seconds")
     
     save_filtered_dataset(
@@ -287,7 +287,7 @@ if __name__ == "__main__":
     time_Denoised = end_time_Denoised - start_time_Denoised
 
     average_ERR_Denoised = sum(Err_list_Denoised) / len(Err_list_Denoised)
-    print(f"\nAverage Denoising Filtering Error (ERR) across all events: {average_ERR_Denoised:.4f}")
+    print(f"\nAverage Denoising Event Reduction Ratio (ERR) across all events: {average_ERR_Denoised:.4f}")
     print(f"time Denoising Filtering = {time_Denoised:.2f} seconds")
     
     save_filtered_dataset(
@@ -334,7 +334,7 @@ if __name__ == "__main__":
     time_RandomCrop = end_time_RandomCrop - start_time_RandomCrop
 
     average_ERR_RandomCrop = sum(Err_list_RandomCrop) / len(Err_list_RandomCrop)    
-    print(f"\nAverage Random Crop Filtering Error (ERR) across all events: {average_ERR_RandomCrop:.4f}")   
+    print(f"\nAverage Random Crop Event Reduction Ratio (ERR) across all events: {average_ERR_RandomCrop:.4f}")   
     print(f"time Random Crop Filtering = {time_RandomCrop:.2f} seconds")
 
     save_filtered_dataset(

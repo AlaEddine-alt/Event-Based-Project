@@ -27,6 +27,9 @@ Datasets/
 DVSGestureDownsampled/
 FilteredDatasets/
 FilteredGoalOrientedTuning/
+FilteredGlobalSaliencyPercentileTuning/
+FilteredGlobalSaliencyThresholdTuning/
+FilteredMeanStdTuning/
 DVSGestureDownsampled.zip
 
 Dsec.txt
