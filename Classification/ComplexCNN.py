@@ -104,6 +104,20 @@ class VoxelGridConverter:
         np.add.at(voxel, (t_idx, y, x), polarity_values)
         return torch.from_numpy(voxel)
 
+def compute_sparsity(dataloader, device='cpu'):
+    total_elements = 0
+    total_nonzero = 0
+    
+    for data, _ in dataloader:
+        data = data.to(device)
+        
+        total_elements += data.numel()
+        total_nonzero += torch.count_nonzero(data).item()
+    
+    sparsity = 1 - (total_nonzero / total_elements)
+    return sparsity
+
+
 # ------------------------
 # Dataset Wrapper
 # ------------------------
@@ -328,3 +342,11 @@ if __name__ == "__main__":
                    "Right Arm CW", "Right Arm CCW", "Left Arm CW", "Left Arm CCW",
                    "Arm Roll", "Air Drums", "Air Guitar", "Other"]
     plot_confusion_matrix(model, test_loader, class_names, device=trainer.device)
+
+    print("Computing sparsity...")
+
+    train_sparsity = compute_sparsity(train_loader)
+    test_sparsity = compute_sparsity(test_loader)
+
+    print(f"Train Sparsity: {train_sparsity*100:.2f}%")
+    print(f"Test Sparsity: {test_sparsity*100:.2f}%")
