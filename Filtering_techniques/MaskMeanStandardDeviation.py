@@ -10,7 +10,8 @@ from functions.OMS_helpers import *
 from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
 from functions.loadDatasetFunctions import extract_single_event, reset_windows
-from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
+#from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
+from Filtering_techniques.OMSSaliencyAttentionMapFiltering import OMSAttentionFiltering
 from functions.adaptFilteredData import tuple_events_to_event_dict
 
 # ---------------------------
@@ -68,7 +69,7 @@ class MaskMeanStandardDeviation:
 
         # OMS & Attention Initialization
 
-        OMS_filter = OMSFiltering(event, scale_factor)
+        OMS_filter = OMSAttentionFiltering(event, scale_factor)
         self.OMS_map, _, _, _ = OMS_filter.OMS_filtering()
 
     def Mean_std_thresholding(self, k_sigma):
