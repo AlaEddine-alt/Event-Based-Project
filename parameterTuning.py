@@ -278,12 +278,13 @@ if __name__ == "__main__":
     test_dataset_raw = DVSGestureNPYDataset(testing_ROOT, users=test_users)
 
     # Parameter tuning for OMS 
+    # comment next two lines to tune other parameters
     parameters_OMS = [0.10, 0.15, 0.20, 0.25, 0.30]
     results_OMS = parameter_tuning_pipeline(parameters_OMS, train_dataset_raw, test_dataset_raw, tecnique="OMS", filtered_root="FilteredOMS")
 
     # Execute the rest after fine tuning of OMS
 
-    threshold_OMS = 0.3 # put fine tuned value here
+    threshold_OMS = 0.3 # put fine tuned value here !!!
 
     # Parameter tuning for Goal Oriented Thresholding
     parameters_GoalOrientedThresholding = [1, 2, 5, 10, 20, 30, 40]
