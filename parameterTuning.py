@@ -42,13 +42,13 @@ def GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, keep_pe
 
     save_filtered_dataset(
         filtered_events_GoalOriented_train,
-        save_dir=f"{filtering_root}/Threshold_{keep_percent}/train",
+        save_dir=f"Datasets/{filtering_root}/Threshold_{keep_percent}/train",
         prefix="train"
     )
 
     save_filtered_dataset(
         filtered_events_GoalOriented_test,
-        save_dir=f"{filtering_root}/Threshold_{keep_percent}/test",
+        save_dir=f"Datasets/{filtering_root}/Threshold_{keep_percent}/test",
         prefix="test"
     )
 
@@ -85,13 +85,13 @@ def MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, k_sigma, fil
     
     save_filtered_dataset(
         filtered_events_MeanStd_train,
-        save_dir=f"{filtering_root}/Threshold_{k_sigma}/train",
+        save_dir=f"Datasets/{filtering_root}/Threshold_{k_sigma}/train",
         prefix="train"
     )
 
     save_filtered_dataset(
         filtered_events_MeanStd_test,
-        save_dir=f"{filtering_root}/Threshold_{k_sigma}/test",
+        save_dir=f"Datasets/{filtering_root}/Threshold_{k_sigma}/test",
         prefix="test"
     )
 
@@ -132,11 +132,11 @@ def GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, use_p
     print(f"time Global Saliency Crop Filtering = {time_GlobalSaliencyCrop:.2f} seconds")
     
     if use_percentile:
-        save_dir_train = f"{filtering_root}/Percentile_{parameters}/train"
-        save_dir_test = f"{filtering_root}/Percentile_{parameters}/test"
+        save_dir_train = f"Datasets/{filtering_root}/Percentile_{parameters}/train"
+        save_dir_test = f"Datasets/{filtering_root}/Percentile_{parameters}/test"
     else:
-        save_dir_train = f"{filtering_root}/Threshold_{parameters}/train"
-        save_dir_test = f"{filtering_root}/Threshold_{parameters}/test"
+        save_dir_train = f"Datasets/{filtering_root}/Threshold_{parameters}/train"
+        save_dir_test = f"Datasets/{filtering_root}/Threshold_{parameters}/test"
 
     save_filtered_dataset(
         filtered_events_GlobalSaliencyCrop_train,

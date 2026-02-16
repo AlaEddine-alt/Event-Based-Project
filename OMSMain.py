@@ -1,7 +1,7 @@
 
 import os
 from functions.loadDatasetFunctions import load_events, DVSGestureNPYDataset
-from Filtering_techniques.OMSSaliencyAttentionMapFiltering import OMSAttentionFiltering
+from Filtering_techniques.AttentionMapFiltering import AttentionFiltering
 #from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
 
 import time
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     # ---------------------------
     # Initialize OMSFiltering
     # ---------------------------
-    oms_filter = OMSAttentionFiltering(
+    oms_filter = AttentionFiltering(
         event=events,
         scale_factor=scale_factor
     )
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     # Run OMS + Attention filtering
     # ---------------------------
     start = time.time()
-    OMS_map, events_dict, filtered_img, ERR = oms_filter.OMS_filtering()
+    OMS_map, events_dict, filtered_img, ERR = oms_filter.Attention_filtering()
     end = time.time()
 
     print("----- Filtering Stats -----")

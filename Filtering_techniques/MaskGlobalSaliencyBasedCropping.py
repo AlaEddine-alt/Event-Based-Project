@@ -6,11 +6,9 @@ import tonic
 import matplotlib.pyplot as plt
 
 from functions.OMS_helpers import *
-from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
 from functions.loadDatasetFunctions import extract_single_event, reset_windows
-#from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
-from Filtering_techniques.OMSSaliencyAttentionMapFiltering import OMSAttentionFiltering
+from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
 from functions.adaptFilteredData import tuple_events_to_event_dict
 
 
@@ -74,7 +72,7 @@ class MaskGlobalSaliencyBasedCropping():
 
         # OMS & Attention Initialization
 
-        OMS_filter = OMSAttentionFiltering(event, scale_factor)
+        OMS_filter = OMSFiltering(event, scale_factor)
         self.OMS_map, _, _, _ = OMS_filter.OMS_filtering()
 
     def MaskGlobalSaliency_filtering(self, use_percentile=True, percentile=90, threshold=0.4):

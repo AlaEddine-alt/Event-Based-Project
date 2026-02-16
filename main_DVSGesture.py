@@ -3,8 +3,8 @@ import time
 import os
 
 from functions.loadDatasetFunctions import load_events, DVSGestureNPYDataset
-#from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
-from Filtering_techniques.OMSSaliencyAttentionMapFiltering import OMSAttentionFiltering
+from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
+from Filtering_techniques.AttentionMapFiltering import AttentionFiltering
 from Filtering_techniques.MaskAdaptiveElbow  import AdaptiveElbowOMSFiltering
 from Filtering_techniques.MaskGoalOriented import MaskGoalOrientedOMSFiltering
 from Filtering_techniques.MaskMeanStandardDeviation import MaskMeanStandardDeviation
@@ -20,7 +20,7 @@ from functions.writeResultsFunctions import write_filtering_results_to_file
 if __name__ == "__main__":
 
     # ---- DVSGesture Dataset -----
-    print("Loading downsampled DVSGesture dataset...")
+    print("Loading DVSGesture dataset...")
 
     # training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTrain"
     # testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTest"
@@ -36,7 +36,6 @@ if __name__ == "__main__":
 
     scale_factor = 3
 
-   
     # --- OMS Filtering ---
     
     filtered_events_OMS_train = []
@@ -46,14 +45,14 @@ if __name__ == "__main__":
     start_time_OMS = time.time()
     for event, label in train_dataset_raw:
         # Initialize and run OMS Filtering
-        OMSfilter = OMSAttentionFiltering(event, scale_factor)
+        OMSfilter = OMSFiltering(event, scale_factor)
         OMSMap, filtered_event_OMS, I_filtered, Err_OMS = OMSfilter.OMS_filtering()
         # OMSfilter.OMS_filtering_visualization(OMSMap, I_filtered)
         filtered_events_OMS_train.append((filtered_event_OMS, label))
         Err_list_OMS.append(Err_OMS)
     for event, label in test_dataset_raw:
         # Initialize and run OMS Filtering
-        OMSfilter = OMSAttentionFiltering(event, scale_factor)
+        OMSfilter = OMSFiltering(event, scale_factor)
         OMSMap, filtered_event_OMS, I_filtered, Err_OMS = OMSfilter.OMS_filtering()
         # OMSfilter.OMS_filtering_visualization(OMSMap, I_filtered)
         filtered_events_OMS_test.append((filtered_event_OMS, label))
@@ -67,17 +66,60 @@ if __name__ == "__main__":
     
     save_filtered_dataset(
         filtered_events_OMS_train,
-        save_dir="FilteredDatasets/OMS/train",
+        save_dir="Datasets/FilteredDatasets/OMS/train",
         prefix="train"
     )
 
     save_filtered_dataset(
         filtered_events_OMS_test,
-        save_dir="FilteredDatasets/OMS/test",
+        save_dir="Datasets/FilteredDatasets/OMS/test",
         prefix="test"
     )
 
     write_filtering_results_to_file("OMS Filtering", average_ERR_OMS, time_OMS)
+    
+    
+    # --- Attention Filtering ---
+    
+    filtered_events_Attention_train = []
+    filtered_events_Attention_test = []
+    Err_list_Attention = []
+    
+    start_time_Attention = time.time()
+    for event, label in train_dataset_raw:
+        # Initialize and run Attention Filtering
+        Attentionfilter = AttentionFiltering(event, scale_factor)
+        filtered_event_Attention, saliency_map, Err_Attention = Attentionfilter.Attention_filtering()
+        # Attentionfilter.Attention_visualization(saliency_map)
+        filtered_events_Attention_train.append((filtered_event_Attention, label))
+        Err_list_Attention.append(Err_Attention)
+    for event, label in test_dataset_raw:
+        # Initialize and run Attention Filtering
+        Attentionfilter = AttentionFiltering(event, scale_factor)
+        filtered_event_Attention, saliency_map, Err_Attention = Attentionfilter.Attention_filtering()
+        # Attentionfilter.Attention_visualization(saliency_map)
+        filtered_events_Attention_test.append((filtered_event_Attention, label))
+        Err_list_Attention.append(Err_Attention)
+    end_time_Attention = time.time()
+    time_Attention = end_time_Attention - start_time_Attention
+
+    average_ERR_Attention = sum(Err_list_Attention) / len(Err_list_Attention)
+    print(f"\nAverage Attention Event Reduction Ratio (ERR) across all events: {average_ERR_Attention:.4f}")
+    print(f"time Attention filtering = {time_Attention:.2f} seconds")
+    
+    save_filtered_dataset(
+        filtered_events_Attention_train,
+        save_dir="Datasets/FilteredDatasets/Attention/train",
+        prefix="train"
+    )
+
+    save_filtered_dataset(
+        filtered_events_Attention_test,
+        save_dir="Datasets/FilteredDatasets/Attention/test",
+        prefix="test"
+    )
+
+    write_filtering_results_to_file("Attention Filtering", average_ERR_Attention, time_Attention)
     
 
     # --- Adaptive Elbow Thresholding ---
@@ -112,22 +154,18 @@ if __name__ == "__main__":
 
     save_filtered_dataset(
         filtered_events_adaptiveElbow_train,
-        save_dir="FilteredDatasets/AdaptiveElbow/train",
+        save_dir="Datasets/FilteredDatasets/AdaptiveElbow/train",
         prefix="train"
     )
 
     save_filtered_dataset(
         filtered_events_adaptiveElbow_test,
-        save_dir="FilteredDatasets/AdaptiveElbow/test",
+        save_dir="Datasets/FilteredDatasets/AdaptiveElbow/test",
         prefix="test"
     )
 
     write_filtering_results_to_file("Adaptive Elbow Thresholding", average_ERR_adaptiveElbow, time_adaptiveElbow)
     
-    # Results Adaptive Elbow Thresholding:
-    # Average Filtering Error (ERR) across all events: 0.9540
-    # time Adaptive Elbow filtering = 2024.04 seconds
-
     
     # --- Goal Oriented Thresholding ---
     
@@ -160,13 +198,13 @@ if __name__ == "__main__":
 
     save_filtered_dataset(
         filtered_events_GoalOriented_train,
-        save_dir="FilteredDatasets/GoalOrientedThresholding/train",
+        save_dir="Datasets/FilteredDatasets/GoalOrientedThresholding/train",
         prefix="train"
     )
 
     save_filtered_dataset(
         filtered_events_GoalOriented_test,
-        save_dir="FilteredDatasets/GoalOrientedThresholding/test",
+        save_dir="Datasets/FilteredDatasets/GoalOrientedThresholding/test",
         prefix="test"
     )
 
@@ -183,6 +221,7 @@ if __name__ == "__main__":
     start_time_MeanStd = time.time()
     # Initialize and run Mean and Standard Deviation Thresholding
     for event, label in train_dataset_raw:
+        print(f"Processing event ")
         MeanStdFilter = MaskMeanStandardDeviation(event, scale_factor)
         filtered_events, ERR_MStd = MeanStdFilter.Mean_std_thresholding(k_sigma)
         # MeanStdFilter.MeanStd_filtering_visualization(filtered_events, k_sigma)
@@ -204,18 +243,19 @@ if __name__ == "__main__":
     
     save_filtered_dataset(
         filtered_events_MeanStd_train,
-        save_dir="FilteredDatasets/MeanStd/train",
+        save_dir="Datasets/FilteredDatasets/MeanStd/train",
         prefix="train"
     )
 
     save_filtered_dataset(
         filtered_events_MeanStd_test,
-        save_dir="FilteredDatasets/MeanStd/test",
+        save_dir="Datasets/FilteredDatasets/MeanStd/test",
         prefix="test"
     )
 
     write_filtering_results_to_file("Mean-StdDev Thresholding", average_ERR_MeanStd, time_MeanStd)
-
+    
+    
     # --- Global Saliency Based Cropping ---
     
     filtered_events_GlobalSaliencyCrop_train = []
@@ -249,18 +289,19 @@ if __name__ == "__main__":
     
     save_filtered_dataset(
         filtered_events_GlobalSaliencyCrop_train,
-        save_dir="FilteredDatasets/GlobalSaliencyBasedCropping/train",
+        save_dir="Datasets/FilteredDatasets/GlobalSaliencyBasedCropping/train",
         prefix="train"
     )
 
     save_filtered_dataset(
         filtered_events_GlobalSaliencyCrop_test,
-        save_dir="FilteredDatasets/GlobalSaliencyBasedCropping/test",
+        save_dir="Datasets/FilteredDatasets/GlobalSaliencyBasedCropping/test",
         prefix="test"
     )
 
     write_filtering_results_to_file("Global Saliency Based Cropping", average_ERR_GlobalSaliencyCrop, time_GlobalSaliencyCrop)
 
+    """
     # --- Denoising Filtering ---
     
     filtered_events_Denoised_train = []
@@ -293,18 +334,19 @@ if __name__ == "__main__":
     
     save_filtered_dataset(
         filtered_events_Denoised_train,
-        save_dir="FilteredDatasets/Denoise/train",
+        save_dir="Datasets/FilteredDatasets/Denoise/train",
         prefix="train"
     )
 
     save_filtered_dataset(
         filtered_events_Denoised_test,
-        save_dir="FilteredDatasets/Denoise/test",
+        save_dir="Datasets/FilteredDatasets/Denoise/test",
         prefix="test"
     )
     
     write_filtering_results_to_file("Denoising Filtering", average_ERR_Denoised, time_Denoised) 
-    
+    """
+
     # --- Random Cropping Filtering ---
 
     filtered_events_RandomCrop_train = []
@@ -340,13 +382,13 @@ if __name__ == "__main__":
 
     save_filtered_dataset(
         filtered_events_RandomCrop_train,
-        save_dir="FilteredDatasets/RandomCrop/train",
+        save_dir="Datasets/FilteredDatasets/RandomCrop/train",
         prefix="train"
     )
 
     save_filtered_dataset(
         filtered_events_RandomCrop_test,
-        save_dir="FilteredDatasets/RandomCrop/test",
+        save_dir="Datasets/FilteredDatasets/RandomCrop/test",
         prefix="test"
     )
     
