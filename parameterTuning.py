@@ -5,14 +5,60 @@ import matplotlib as plt
 from functions.saveAndLoadFilteredData import FilteredNPZDataset, save_filtered_dataset
 from functions.loadDatasetFunctions import DVSGestureNPYDataset
 from Classification.ComplexCNN import train_model
+from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
 from Filtering_techniques.MaskGoalOriented import MaskGoalOrientedOMSFiltering
 from Filtering_techniques.MaskMeanStandardDeviation import MaskMeanStandardDeviation
 from Filtering_techniques.MaskGlobalSaliencyBasedCropping import MaskGlobalSaliencyBasedCropping
 from functions.writeResultsFunctions import write_parameter_tuning_results_to_file
 
+# --- OMS ---
+
+def OMS_filtering_pipeline(train_dataset_raw, test_dataset_raw, threshold, filtering_root = "FilterTuning", scale_factor=3):
+
+    filtered_events_OMS_train = []
+    filtered_events_OMS_test = []
+    Err_list_OMS = []
+    start_time_OMS = time.time()
+    for event, label in train_dataset_raw:
+        # Initialize and run OMS Filtering
+        oms_filter = OMSFiltering(event, scale_factor, threshold)
+        _, filtered_events, _, ERR_OMS = oms_filter.OMS_filtering()
+        # oms_filter.OMS_filtering_visualization(OMS_map, filtered_img)
+        filtered_events_OMS_train.append((filtered_events, label))
+        Err_list_OMS.append(ERR_OMS)
+    for event, label in test_dataset_raw:
+        # Initialize and run OMS Filtering
+        oms_filter = OMSFiltering(event, scale_factor, threshold)
+        _, filtered_events, _, ERR_OMS = oms_filter.OMS_filtering()
+        # oms_filter.OMS_filtering_visualization(OMS_map, filtered_img)
+        filtered_events_OMS_test.append((filtered_events, label))
+        Err_list_OMS.append(ERR_OMS)
+    
+    end_time_OMS = time.time()
+    time_OMS = end_time_OMS - start_time_OMS
+    average_ERR_OMS = sum(Err_list_OMS) / len(Err_list_OMS)
+    print(f"\nAverage OMS Event Reduction Ratio (ERR) across all events: {average_ERR_OMS:.4f}")
+    print(f"time OMS Filtering = {time_OMS:.2f} seconds")
+
+    save_filtered_dataset(
+        filtered_events_OMS_train,
+        save_dir=f"Datasets/{filtering_root}/Threshold_{threshold}/train",
+        prefix="train"
+    )
+
+    save_filtered_dataset(
+        filtered_events_OMS_test,
+        save_dir=f"Datasets/{filtering_root}/Threshold_{threshold}/test",
+        prefix="test"
+    )
+
+    return average_ERR_OMS, time_OMS
+
+
+
 # --- Goal Oriented Thresholding ---
 
-def GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, keep_percent, filtering_root = "FilterTuning", scale_factor=3):
+def GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, keep_percent, threshold_OMS, filtering_root = "FilterTuning", scale_factor=3):
 
     filtered_events_GoalOriented_train = []
     filtered_events_GoalOriented_test = []
@@ -21,14 +67,14 @@ def GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, keep_pe
     start_time_GoalOriented = time.time()
     for event, label in train_dataset_raw:
         # Initialize and run Goal Oriented Thresholding
-        GoalOrientedFilter = MaskGoalOrientedOMSFiltering(event, scale_factor)
+        GoalOrientedFilter = MaskGoalOrientedOMSFiltering(event, scale_factor, threshold_OMS)
         filtered_events, masked_OMS, OMSMap, ERR_goal = GoalOrientedFilter.Goadaptive_thresholding(keep_percent) 
         # GoalOrientedFilter.GoalOriented_filtering_visualization(OMSMap, masked_OMS)
         filtered_events_GoalOriented_train.append((filtered_events, label))
         Err_list_GoalOriented.append(ERR_goal)
     for event, label in test_dataset_raw:
         # Initialize and run Goal Oriented Thresholding
-        GoalOrientedFilter = MaskGoalOrientedOMSFiltering(event, scale_factor)
+        GoalOrientedFilter = MaskGoalOrientedOMSFiltering(event, scale_factor, threshold_OMS)
         filtered_events, masked_OMS, OMSMap, ERR_goal = GoalOrientedFilter.Goadaptive_thresholding(keep_percent) 
         # GoalOrientedFilter.GoalOriented_filtering_visualization(OMSMap, masked_OMS)
         filtered_events_GoalOriented_test.append((filtered_events, label))
@@ -55,7 +101,7 @@ def GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, keep_pe
     return average_ERR_GoalOriented, time_GoalOriented
 
 
-def MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, k_sigma, filtering_root = "FilterTuning", scale_factor=3):
+def MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, k_sigma, threshold_OMS, filtering_root = "FilterTuning", scale_factor=3):
     
     filtered_events_MeanStd_train = []
     filtered_events_MeanStd_test = []
@@ -64,13 +110,13 @@ def MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, k_sigma, fil
     start_time_MeanStd = time.time()
     # Initialize and run Mean and Standard Deviation Thresholding
     for event, label in train_dataset_raw:
-        MeanStdFilter = MaskMeanStandardDeviation(event, scale_factor)
+        MeanStdFilter = MaskMeanStandardDeviation(event, scale_factor, threshold_OMS)
         filtered_events, ERR_MStd = MeanStdFilter.Mean_std_thresholding(k_sigma)
         # MeanStdFilter.MeanStd_filtering_visualization(filtered_events, k_sigma)
         filtered_events_MeanStd_train.append((filtered_events, label))
         Err_list_MeanStd.append(ERR_MStd)
     for event, label in test_dataset_raw:
-        MeanStdFilter = MaskMeanStandardDeviation(event, scale_factor)
+        MeanStdFilter = MaskMeanStandardDeviation(event, scale_factor, threshold_OMS)
         filtered_events, ERR_MStd = MeanStdFilter.Mean_std_thresholding(k_sigma)
         # MeanStdFilter.MeanStd_filtering_visualization(filtered_events, k_sigma)
         filtered_events_MeanStd_test.append((filtered_events, label))
@@ -97,7 +143,7 @@ def MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, k_sigma, fil
 
     return average_ERR_MeanStd, time_MeanStd
 
-def GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, use_percentile, parameters, filtering_root = "FilterTuning", scale_factor=3):
+def GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, use_percentile, parameters, threshold_OMS, filtering_root = "FilterTuning", scale_factor=3):
     
     """ parameters: 
     if use_percentile = True, parameters is the percentile value; 
@@ -107,19 +153,17 @@ def GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, use_p
     filtered_events_GlobalSaliencyCrop_test = []
     Err_list_GlobalSaliencyCrop = []
 
-    #TODO sistemare qua e dividere tra percentile e threshold
-
     start_time_GlobalSaliencyCrop = time.time()
     for event, label in train_dataset_raw:
         # Initialize and run Global Saliency Based Cropping
-        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor)
+        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor, threshold_OMS)
         filtered_events, OMS_norm, cropped_OMS_map, crop_box, ERR_global = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(use_percentile, parameters, parameters)
         # GlobalSaliencyCropper.MaskGlobalSaliency_filtering_visualization(cropped_OMS_map, OMS_norm)
         filtered_events_GlobalSaliencyCrop_train.append((filtered_events, label))
         Err_list_GlobalSaliencyCrop.append(ERR_global)  
     for event, label in test_dataset_raw:
         # Initialize and run Global Saliency Based Cropping
-        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor)
+        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor, threshold_OMS)
         filtered_events, OMS_norm, cropped_OMS_map, crop_box, ERR_global = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(use_percentile, parameters, parameters)
         # GlobalSaliencyCropper.MaskGlobalSaliency_filtering_visualization(cropped_OMS_map, OMS_norm)
         filtered_events_GlobalSaliencyCrop_test.append((filtered_events, label))
@@ -166,25 +210,28 @@ def evaluate_parameters(kp, filtered_root = "FilterTuning"):
 
     return acc, train_time
 
-def parameter_tuning_pipeline(parameters, train_dataset_raw, test_dataset_raw, tecnique, filtered_root = "FilterEvaluationTuning"):
+def parameter_tuning_pipeline(parameters, train_dataset_raw, test_dataset_raw, tecnique, filtered_root = "FilterEvaluationTuning", threshold_OMS = 0.3):
 
     results = {}
 
     for i in range(len(parameters)):
 
         param = parameters[i]
-        if tecnique == "Goal Oriented Thresholding":
+        if tecnique == "OMS":
+            print(f"\nEvaluating OMS Filtering with keep percentage: {param}%")
+            average_ERR_OMS, time_OMS = OMS_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, filtered_root)   
+        elif tecnique == "Goal Oriented Thresholding":
             print(f"\nEvaluating Goal Oriented Thresholding with keep percentage: {param}%")
-            average_ERR_GoalOriented, time_GoalOriented = GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, filtered_root)
+            average_ERR_GoalOriented, time_GoalOriented = GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, threshold_OMS, filtered_root)
         elif tecnique == "Mean Standard Deviation":
             print(f"\nEvaluating Mean Standard Deviation Thresholding with k_sigma: {param}")
-            average_ERR_GoalOriented, time_GoalOriented = MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, filtered_root)
+            average_ERR_GoalOriented, time_GoalOriented = MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, threshold_OMS, filtered_root)
         elif tecnique == "Global Saliency Crop use percentile":
             print(f"\nEvaluating Global Saliency Crop with percentile: {param}%")
-            average_ERR_GoalOriented, time_GoalOriented = GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, True, param, filtered_root)
+            average_ERR_GoalOriented, time_GoalOriented = GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, True, param, threshold_OMS, filtered_root)
         elif tecnique == "Global Saliency Crop not use percentile":
             print(f"\nEvaluating Global Saliency Crop with threshold: {param}")
-            average_ERR_GoalOriented, time_GoalOriented = GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, False, param, filtered_root)
+            average_ERR_GoalOriented, time_GoalOriented = GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, False, param, threshold_OMS, filtered_root)
         else :
             raise ValueError("Invalid technique specified.")
         acc, train_time = evaluate_parameters(param, filtered_root)
@@ -230,25 +277,31 @@ if __name__ == "__main__":
     train_dataset_raw = DVSGestureNPYDataset(training_ROOT, users=training_users)
     test_dataset_raw = DVSGestureNPYDataset(testing_ROOT, users=test_users)
 
+    # Parameter tuning for OMS 
+    parameters_OMS = [0.10, 0.15, 0.20, 0.25, 0.30]
+    results_OMS = parameter_tuning_pipeline(parameters_OMS, train_dataset_raw, test_dataset_raw, tecnique="OMS", filtered_root="FilteredOMS")
+
+    # Execute the rest after fine tuning of OMS
+
+    threshold_OMS = 0.3 # put fine tuned value here
+
     # Parameter tuning for Goal Oriented Thresholding
-    # parameters_GoalOrientedThresholding = [1, 2, 5, 10, 20, 30, 40]
- 
-    #result_GoalOrientedThresholding = parameter_tuning_pipeline(parameters_GoalOrientedThresholding, train_dataset_raw, test_dataset_raw, tecnique="Goal Oriented Thresholding", filtered_root="FilteredGoalOrientedTuning")
+    parameters_GoalOrientedThresholding = [1, 2, 5, 10, 20, 30, 40]
+    result_GoalOrientedThresholding = parameter_tuning_pipeline(parameters_GoalOrientedThresholding, train_dataset_raw, test_dataset_raw, tecnique="Goal Oriented Thresholding", filtered_root="FilteredGoalOrientedTuning", threshold_OMS=threshold_OMS)
     
-
     # Parameter tuning for Mean Standard Deviation Thresholding
-    #parameters_MeanStd = [0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0]
-
-    #results_MeanStd = parameter_tuning_pipeline(parameters_MeanStd, train_dataset_raw, test_dataset_raw, tecnique="Mean Standard Deviation", filtered_root="FilteredMeanStdTuning")
+    parameters_MeanStd = [0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0]
+    results_MeanStd = parameter_tuning_pipeline(parameters_MeanStd, train_dataset_raw, test_dataset_raw, tecnique="Mean Standard Deviation", filtered_root="FilteredMeanStdTuning", threshold_OMS=threshold_OMS)
 
     # Parameter tuning for Global Saliency-based Cropping
     parameters_percentile_GlobalSaliency = [85, 88, 90, 92, 95]
     parameters_thresholds_GlobalSaliency = [0.15, 0.20, 0.25]
 
-    results_GlobalSaliency_percentile = parameter_tuning_pipeline(parameters_percentile_GlobalSaliency, train_dataset_raw, test_dataset_raw, tecnique="Global Saliency Crop use percentile", filtered_root="FilteredGlobalSaliencyPercentileTuning")
+    results_GlobalSaliency_percentile = parameter_tuning_pipeline(parameters_percentile_GlobalSaliency, train_dataset_raw, test_dataset_raw, tecnique="Global Saliency Crop use percentile", filtered_root="FilteredGlobalSaliencyPercentileTuning", threshold_OMS=threshold_OMS)
     
-    results_GlobalSaliency_threshold = parameter_tuning_pipeline(parameters_thresholds_GlobalSaliency, train_dataset_raw, test_dataset_raw, tecnique="Global Saliency Crop not use percentile", filtered_root="FilteredGlobalSaliencyThresholdTuning")
+    results_GlobalSaliency_threshold = parameter_tuning_pipeline(parameters_thresholds_GlobalSaliency, train_dataset_raw, test_dataset_raw, tecnique="Global Saliency Crop not use percentile", filtered_root="FilteredGlobalSaliencyThresholdTuning", threshold_OMS=threshold_OMS)
     
+    plot_threshold_vs_accuracy(results_OMS, parameters_OMS)
     plot_threshold_vs_accuracy(result_GoalOrientedThresholding, parameters_GoalOrientedThresholding)
     plot_threshold_vs_accuracy(results_MeanStd, parameters_MeanStd)
     plot_threshold_vs_accuracy(results_GlobalSaliency_percentile, parameters_percentile_GlobalSaliency)

@@ -12,41 +12,11 @@ from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
 from functions.adaptFilteredData import tuple_events_to_event_dict
 
-# ---------------------------
-# Config
-# ---------------------------
-class Config:
-    RESOLUTION = [128, 128]  # Resolution of the DVS sensor
-    MAX_X = RESOLUTION[0]
-    MAX_Y = RESOLUTION[1]
-    DROP_RATE = 0  # Percentage of events to drop
-    UPDATE_INTERVAL = 0.001  # seconds
-    DEVICE = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-
-    OMS_PARAMS = {
-        'size_krn_center': 8,
-        'sigma_center': 1,
-        'size_krn_surround': 8,
-        'sigma_surround': 4,
-        'threshold': 0.3, # This is the internal OMS threshold, not the mask threshold
-        'tau_memOMS': 0.1,
-        'sc': 1,
-        'ss': 1
-    }
-
-    ATTENTION_PARAMS = {
-        'VM_radius': 8, 'VM_radius_group': 15,
-        'num_ori': 4, 'b_inh': 3, 'g_inh': 1.0,
-        'w_sum': 0.5, 'vm_w': 0.2, 'vm_w2': 0.4,
-        'vm_w_group': 0.2, 'vm_w2_group': 0.4,
-        'random_init': False, 'lif_tau': 0.3
-    }
-
 # ----- Mean and Standard Deviation Thresholding -----
 
 class MaskMeanStandardDeviation:
 
-    def __init__(self, event, scale_factor):
+    def __init__(self, event, scale_factor, threshold_OMS):
         xs, ys, timestamps, pols = extract_single_event(event)
         window_pos, window_neg, max_x, max_y, numevs = reset_windows(xs, ys, pols)
         self.xs = xs
@@ -62,12 +32,11 @@ class MaskMeanStandardDeviation:
         self.events_list = [numevs[0]]
         self.suppressed_list = [numevs[0]]
         self.dropped_list = [0]
-        
-        self.config = Config()
+        self.threshold_OMS = threshold_OMS
 
         # OMS & Attention Initialization
 
-        OMS_filter = OMSFiltering(event, scale_factor)
+        OMS_filter = OMSFiltering(event, scale_factor, threshold_OMS)
         self.OMS_map, _, _, _ = OMS_filter.OMS_filtering()
 
     def Mean_std_thresholding(self, k_sigma):

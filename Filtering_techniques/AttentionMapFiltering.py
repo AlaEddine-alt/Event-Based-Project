@@ -66,7 +66,7 @@ class AttentionFiltering:
     # --------------------------------------------------
     # Main Attention-Based Filtering
     # --------------------------------------------------
-    def Attention_filtering(self, adaptive_threshold=True, fixed_threshold=0.3):
+    def Attention_filtering(self):
 
         # Initialize Attention Module
         net_attention = AttentionModule(**self.config.ATTENTION_PARAMS).to(self.config.DEVICE)

@@ -35,24 +35,26 @@ if __name__ == "__main__":
     test_dataset_raw = DVSGestureNPYDataset(testing_ROOT, users=test_users)
 
     scale_factor = 3
-
+    
     # --- OMS Filtering ---
     
     filtered_events_OMS_train = []
     filtered_events_OMS_test = []
     Err_list_OMS = []
+    threshold_OMS = 0.3 
     
     start_time_OMS = time.time()
     for event, label in train_dataset_raw:
+        print("processing event")
         # Initialize and run OMS Filtering
-        OMSfilter = OMSFiltering(event, scale_factor)
+        OMSfilter = OMSFiltering(event, scale_factor, threshold_OMS)
         OMSMap, filtered_event_OMS, I_filtered, Err_OMS = OMSfilter.OMS_filtering()
         # OMSfilter.OMS_filtering_visualization(OMSMap, I_filtered)
         filtered_events_OMS_train.append((filtered_event_OMS, label))
         Err_list_OMS.append(Err_OMS)
     for event, label in test_dataset_raw:
         # Initialize and run OMS Filtering
-        OMSfilter = OMSFiltering(event, scale_factor)
+        OMSfilter = OMSFiltering(event, scale_factor, threshold_OMS)
         OMSMap, filtered_event_OMS, I_filtered, Err_OMS = OMSfilter.OMS_filtering()
         # OMSfilter.OMS_filtering_visualization(OMSMap, I_filtered)
         filtered_events_OMS_test.append((filtered_event_OMS, label))
@@ -104,7 +106,7 @@ if __name__ == "__main__":
     time_Attention = end_time_Attention - start_time_Attention
 
     average_ERR_Attention = sum(Err_list_Attention) / len(Err_list_Attention)
-    print(f"\nAverage Attention Event Reduction Ratio (ERR) across all events: {average_ERR_Attention:.4f}")
+    print(f"\nAverage Attention filtering Event Reduction Ratio (ERR) across all events: {average_ERR_Attention:.4f}")
     print(f"time Attention filtering = {time_Attention:.2f} seconds")
     
     save_filtered_dataset(
@@ -121,7 +123,7 @@ if __name__ == "__main__":
 
     write_filtering_results_to_file("Attention Filtering", average_ERR_Attention, time_Attention)
     
-
+    
     # --- Adaptive Elbow Thresholding ---
     
     filtered_events_adaptiveElbow_train = []
@@ -131,7 +133,7 @@ if __name__ == "__main__":
     start_time_adaptiveElbow = time.time()
     for event, label in train_dataset_raw:
         # Initialize and run Adaptive Elbow Thresholding
-        AdaptiveElbowFilter = AdaptiveElbowOMSFiltering(event, scale_factor)
+        AdaptiveElbowFilter = AdaptiveElbowOMSFiltering(event, scale_factor, threshold_OMS)
         filtered_events, masked_OMS, OMSMap, Err_adElow = AdaptiveElbowFilter.Albowdaptive_thresholding()
         # AdaptiveElbowFilter.AdaptiveElbow_filtering_visualization(OMSMap, masked_OMS)
         filtered_events_adaptiveElbow_train.append((filtered_events, label))
@@ -139,7 +141,7 @@ if __name__ == "__main__":
     
     for event, label in test_dataset_raw:
         # Initialize and run Adaptive Elbow Thresholding
-        AdaptiveElbowFilter = AdaptiveElbowOMSFiltering(event, scale_factor)
+        AdaptiveElbowFilter = AdaptiveElbowOMSFiltering(event, scale_factor, threshold_OMS)
         filtered_events, masked_OMS, OMSMap, Err_adElow = AdaptiveElbowFilter.Albowdaptive_thresholding()
         # AdaptiveElbowFilter.AdaptiveElbow_filtering_visualization(OMSMap, masked_OMS)
         filtered_events_adaptiveElbow_test.append((filtered_events, label))
@@ -176,15 +178,16 @@ if __name__ == "__main__":
     
     start_time_GoalOriented = time.time()
     for event, label in train_dataset_raw:
+        print("processing")
         # Initialize and run Goal Oriented Thresholding
-        GoalOrientedFilter = MaskGoalOrientedOMSFiltering(event, scale_factor)
+        GoalOrientedFilter = MaskGoalOrientedOMSFiltering(event, scale_factor, threshold_OMS)
         filtered_events, masked_OMS, OMSMap, ERR_goal = GoalOrientedFilter.Goadaptive_thresholding(keep_percent) 
         # GoalOrientedFilter.GoalOriented_filtering_visualization(OMSMap, masked_OMS)
         filtered_events_GoalOriented_train.append((filtered_events, label))
         Err_list_GoalOriented.append(ERR_goal)
     for event, label in test_dataset_raw:
         # Initialize and run Goal Oriented Thresholding
-        GoalOrientedFilter = MaskGoalOrientedOMSFiltering(event, scale_factor)
+        GoalOrientedFilter = MaskGoalOrientedOMSFiltering(event, scale_factor, threshold_OMS)
         filtered_events, masked_OMS, OMSMap, ERR_goal = GoalOrientedFilter.Goadaptive_thresholding(keep_percent) 
         # GoalOrientedFilter.GoalOriented_filtering_visualization(OMSMap, masked_OMS)
         filtered_events_GoalOriented_test.append((filtered_events, label))
@@ -222,13 +225,13 @@ if __name__ == "__main__":
     # Initialize and run Mean and Standard Deviation Thresholding
     for event, label in train_dataset_raw:
         print(f"Processing event ")
-        MeanStdFilter = MaskMeanStandardDeviation(event, scale_factor)
+        MeanStdFilter = MaskMeanStandardDeviation(event, scale_factor, threshold_OMS)
         filtered_events, ERR_MStd = MeanStdFilter.Mean_std_thresholding(k_sigma)
         # MeanStdFilter.MeanStd_filtering_visualization(filtered_events, k_sigma)
         filtered_events_MeanStd_train.append((filtered_events, label))
         Err_list_MeanStd.append(ERR_MStd)
     for event, label in test_dataset_raw:
-        MeanStdFilter = MaskMeanStandardDeviation(event, scale_factor)
+        MeanStdFilter = MaskMeanStandardDeviation(event, scale_factor, threshold_OMS)
         filtered_events, ERR_MStd = MeanStdFilter.Mean_std_thresholding(k_sigma)
         # MeanStdFilter.MeanStd_filtering_visualization(filtered_events, k_sigma)
         filtered_events_MeanStd_test.append((filtered_events, label))
@@ -268,14 +271,14 @@ if __name__ == "__main__":
     start_time_GlobalSaliencyCrop = time.time()
     for event, label in train_dataset_raw:
         # Initialize and run Global Saliency Based Cropping
-        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor)
+        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor, threshold_OMS)
         filtered_events, OMS_norm, cropped_OMS_map, crop_box, ERR_global = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(Use_percentile, percentile, threshold)
         # GlobalSaliencyCropper.MaskGlobalSaliency_filtering_visualization(cropped_OMS_map, OMS_norm)
         filtered_events_GlobalSaliencyCrop_train.append((filtered_events, label))
         Err_list_GlobalSaliencyCrop.append(ERR_global)  
     for event, label in test_dataset_raw:
         # Initialize and run Global Saliency Based Cropping
-        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor)
+        GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor, threshold_OMS)
         filtered_events, OMS_norm, cropped_OMS_map, crop_box, ERR_global = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(Use_percentile, percentile, threshold)
         # GlobalSaliencyCropper.MaskGlobalSaliency_filtering_visualization(cropped_OMS_map, OMS_norm)
         filtered_events_GlobalSaliencyCrop_test.append((filtered_events, label))

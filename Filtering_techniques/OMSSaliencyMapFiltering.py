@@ -18,7 +18,6 @@ class Config:
     RESOLUTION = [128, 128]  # Resolution of the DVS sensor
     MAX_X = RESOLUTION[0]
     MAX_Y = RESOLUTION[1]
-    DROP_RATE = 0  # Percentage of events to drop
     UPDATE_INTERVAL = 0.001  # seconds
     DEVICE = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
 
@@ -33,28 +32,13 @@ class Config:
         'ss': 1
     }
 
-    ATTENTION_PARAMS = {
-        'VM_radius': 8,  # (R0)
-        'VM_radius_group': 15,
-        'num_ori': 4,
-        'b_inh': 3,  # (w)
-        'g_inh': 1.0,
-        'w_sum': 0.5,
-        'vm_w': 0.2,  # (rho)
-        'vm_w2': 0.4,
-        'vm_w_group': 0.2,
-        'vm_w2_group': 0.4,
-        'random_init': False,
-        'lif_tau': 0.3
-    }
-
 # ---------------------------
 # Main loop
 # ---------------------------
 
 class OMSFiltering:
 
-    def __init__(self, event, scale_factor):
+    def __init__(self, event, scale_factor, threshold):
 
         # OMS & Attention Initialization
         
@@ -73,6 +57,7 @@ class OMSFiltering:
         self.events_list = [numevs[0]]
         self.suppressed_list = [numevs[0]]
         self.dropped_list = [0]
+        self.threshold = threshold
         
         self.config = Config()
 
@@ -80,16 +65,15 @@ class OMSFiltering:
     def OMS_filtering(self):
 
         net_center, net_surround = initialize_oms(self.config.DEVICE, self.config.OMS_PARAMS)
-        net_attention = AttentionModule(**self.config.ATTENTION_PARAMS)
 
         OMS_map, indexes = compute_OMS(self.window_pos, net_center, net_surround, self.config)
 
         # --- Saliency Map Retrieval and Normalization ---
         
-        # 1. Convert to float32 for normalization and filtering operations
+        # Convert to float32 for normalization and filtering operations
         S = OMS_map.astype(np.float32)
         
-        # 2. Normalize Saliency Map (S) to a 0-to-1 range
+        # Normalize Saliency Map (S) to a 0-to-1 range
         min_val = np.min(S)
         max_val = np.max(S)
         # Use a safety check for division by zero (in case the map is uniformly zero)
@@ -102,7 +86,7 @@ class OMSFiltering:
         # The variable 'S_normalized' is the final filtering mask (S)
         
 
-        # 2. Prepare the Input Image (I)
+        # Prepare the Input Image (I)
         I = self.window_pos.astype(np.float32) # The raw event map is our input I
         
         # --- NEW: Ensure all matrices have consistent shape ---
@@ -115,9 +99,9 @@ class OMSFiltering:
             I = cv2.resize(I, (target_shape[1], target_shape[0]), interpolation=cv2.INTER_LINEAR)
         # --- END CRITICAL CHECK ---
 
-        # 3. Define Filter Extremes (Tune these sigma values)
-        sigma_min = 0.5  # Minimal blur, preserves details (for salient objects)
-        sigma_max = 5.0  # Aggressive blur, removes noise (for background)
+        # Define Filter Extremes, fixed values that guaranties stability and balance
+        sigma_min = 0.8  # Minimal blur, preserves details (for salient objects)
+        sigma_max = 4.0  # More aggressive blur, removes noise (for background)
 
         # Calculate kernel sizes (must be positive odd integers)
         def get_ksize(sigma):
@@ -126,14 +110,14 @@ class OMSFiltering:
         ksize_min = get_ksize(sigma_min)
         ksize_max = get_ksize(sigma_max)
         
-        # 4. Create the two extreme filtered images
+        # Create the two extreme filtered images
         # I_preserved: Lightly filtered (used when S is high)
         I_preserved = cv2.GaussianBlur(I, (ksize_min, ksize_min), sigma_min)
 
         # I_smooth: Heavily filtered (used when S is low)
         I_smooth = cv2.GaussianBlur(I, (ksize_max, ksize_max), sigma_max)
 
-        # 5. Apply Weighted Blending: I_filtered = I_preserved * S + I_smooth * (1 - S)
+        # Apply Weighted Blending: I_filtered = I_preserved * S + I_smooth * (1 - S)
         one_minus_S = 1.0 - S_normalized
         I_filtered = I_preserved * S_normalized + I_smooth * one_minus_S
         
@@ -144,13 +128,8 @@ class OMSFiltering:
         I_filtered_normalized = I_filtered / np.max(I_filtered)
         I_filtered_8bit = (I_filtered_normalized * 255).astype(np.uint8)
 
-
-        # ---------------------------
-        # Event-level filtering using OMS Saliency
-        # ---------------------------
-
-        # Saliency threshold (tune this)
-        saliency_threshold = 0.3  
+        # Saliency threshold 
+        saliency_threshold = self.threshold
 
         # Boolean mask of salient pixels
         saliency_mask = S_normalized >= saliency_threshold
