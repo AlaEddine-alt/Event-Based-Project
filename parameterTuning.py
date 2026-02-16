@@ -283,7 +283,7 @@ if __name__ == "__main__":
     results_OMS = parameter_tuning_pipeline(parameters_OMS, train_dataset_raw, test_dataset_raw, tecnique="OMS", filtered_root="FilteredOMS")
 
     # Execute the rest after fine tuning of OMS
-
+    """
     threshold_OMS = 0.3 # put fine tuned value here !!!
 
     # Parameter tuning for Goal Oriented Thresholding
@@ -308,7 +308,7 @@ if __name__ == "__main__":
     plot_threshold_vs_accuracy(results_GlobalSaliency_percentile, parameters_percentile_GlobalSaliency)
     plot_threshold_vs_accuracy(results_GlobalSaliency_threshold, parameters_thresholds_GlobalSaliency)
 
-
+    """
 
 
 
