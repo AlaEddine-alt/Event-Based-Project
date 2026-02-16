@@ -3,7 +3,8 @@ import time
 import os
 
 from functions.loadDatasetFunctions import load_events, DVSGestureNPYDataset
-from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
+#from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
+from Filtering_techniques.OMSSaliencyAttentionMapFiltering import OMSAttentionFiltering
 from Filtering_techniques.MaskAdaptiveElbow  import AdaptiveElbowOMSFiltering
 from Filtering_techniques.MaskGoalOriented import MaskGoalOrientedOMSFiltering
 from Filtering_techniques.MaskMeanStandardDeviation import MaskMeanStandardDeviation
@@ -45,14 +46,14 @@ if __name__ == "__main__":
     start_time_OMS = time.time()
     for event, label in train_dataset_raw:
         # Initialize and run OMS Filtering
-        OMSfilter = OMSFiltering(event, scale_factor)
+        OMSfilter = OMSAttentionFiltering(event, scale_factor)
         OMSMap, filtered_event_OMS, I_filtered, Err_OMS = OMSfilter.OMS_filtering()
         # OMSfilter.OMS_filtering_visualization(OMSMap, I_filtered)
         filtered_events_OMS_train.append((filtered_event_OMS, label))
         Err_list_OMS.append(Err_OMS)
     for event, label in test_dataset_raw:
         # Initialize and run OMS Filtering
-        OMSfilter = OMSFiltering(event, scale_factor)
+        OMSfilter = OMSAttentionFiltering(event, scale_factor)
         OMSMap, filtered_event_OMS, I_filtered, Err_OMS = OMSfilter.OMS_filtering()
         # OMSfilter.OMS_filtering_visualization(OMSMap, I_filtered)
         filtered_events_OMS_test.append((filtered_event_OMS, label))
