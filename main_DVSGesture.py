@@ -9,12 +9,11 @@ from Filtering_techniques.MaskAdaptiveElbow  import AdaptiveElbowOMSFiltering
 from Filtering_techniques.MaskGoalOriented import MaskGoalOrientedOMSFiltering
 from Filtering_techniques.MaskMeanStandardDeviation import MaskMeanStandardDeviation
 from Filtering_techniques.MaskGlobalSaliencyBasedCropping import MaskGlobalSaliencyBasedCropping
-from Filtering_techniques.TecniquesNotUsed.Random_filtering import RandomEventFiltering
 from Filtering_techniques.Denoise import Denoise
 from Filtering_techniques.RandomCropFiltering import RandomCropFiltering
 from Classification.ComplexCNN import train_model
-from functions.saveAndLoadFilteredData import save_filtered_dataset
-from functions.writeResultsFunctions import write_filtering_results_to_file
+from functions.saveAndLoadFilteredData import save_filtered_dataset, FilteredNPYDataset
+from functions.writeResultsFunctions import write_filtering_results_to_file, write_results_to_file
 
 
 if __name__ == "__main__":
@@ -22,11 +21,11 @@ if __name__ == "__main__":
     # ---- DVSGesture Dataset -----
     print("Loading DVSGesture dataset...")
 
-    # training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTrain"
-    # testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTest"
+    training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTrain"
+    testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTest"
 
-    training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTrain"
-    testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTest"
+    #training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTrain"
+    #testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTest"
 
     training_users = sorted(os.listdir(training_ROOT))
     test_users = sorted(os.listdir(testing_ROOT))
@@ -36,6 +35,7 @@ if __name__ == "__main__":
 
     scale_factor = 3
     
+    """
     # --- OMS Filtering ---
     
     filtered_events_OMS_train = []
@@ -68,19 +68,18 @@ if __name__ == "__main__":
     
     save_filtered_dataset(
         filtered_events_OMS_train,
-        save_dir="Datasets/FilteredDatasets/OMS/train",
-        prefix="train"
+        save_dir="Datasets/FilteredDatasets/OMS/train"
     )
 
     save_filtered_dataset(
         filtered_events_OMS_test,
-        save_dir="Datasets/FilteredDatasets/OMS/test",
-        prefix="test"
+        save_dir="Datasets/FilteredDatasets/OMS/test"
     )
 
     write_filtering_results_to_file("OMS Filtering", average_ERR_OMS, time_OMS)
     
-    
+    # Best Test Accuracy: 37.32%
+    """
     # --- Attention Filtering ---
     
     filtered_events_Attention_train = []
@@ -111,14 +110,12 @@ if __name__ == "__main__":
     
     save_filtered_dataset(
         filtered_events_Attention_train,
-        save_dir="Datasets/FilteredDatasets/Attention/train",
-        prefix="train"
+        save_dir="Datasets/FilteredDatasets/Attention/train"
     )
 
     save_filtered_dataset(
         filtered_events_Attention_test,
-        save_dir="Datasets/FilteredDatasets/Attention/test",
-        prefix="test"
+        save_dir="Datasets/FilteredDatasets/Attention/test"
     )
 
     write_filtering_results_to_file("Attention Filtering", average_ERR_Attention, time_Attention)
@@ -156,14 +153,12 @@ if __name__ == "__main__":
 
     save_filtered_dataset(
         filtered_events_adaptiveElbow_train,
-        save_dir="Datasets/FilteredDatasets/AdaptiveElbow/train",
-        prefix="train"
+        save_dir="Datasets/FilteredDatasets/AdaptiveElbow/train"
     )
 
     save_filtered_dataset(
         filtered_events_adaptiveElbow_test,
-        save_dir="Datasets/FilteredDatasets/AdaptiveElbow/test",
-        prefix="test"
+        save_dir="Datasets/FilteredDatasets/AdaptiveElbow/test"
     )
 
     write_filtering_results_to_file("Adaptive Elbow Thresholding", average_ERR_adaptiveElbow, time_adaptiveElbow)
@@ -201,14 +196,12 @@ if __name__ == "__main__":
 
     save_filtered_dataset(
         filtered_events_GoalOriented_train,
-        save_dir="Datasets/FilteredDatasets/GoalOrientedThresholding/train",
-        prefix="train"
+        save_dir="Datasets/FilteredDatasets/GoalOrientedThresholding/train"
     )
 
     save_filtered_dataset(
         filtered_events_GoalOriented_test,
-        save_dir="Datasets/FilteredDatasets/GoalOrientedThresholding/test",
-        prefix="test"
+        save_dir="Datasets/FilteredDatasets/GoalOrientedThresholding/test"
     )
 
     write_filtering_results_to_file("Goal Oriented Thresholding", average_ERR_GoalOriented, time_GoalOriented)
@@ -246,14 +239,12 @@ if __name__ == "__main__":
     
     save_filtered_dataset(
         filtered_events_MeanStd_train,
-        save_dir="Datasets/FilteredDatasets/MeanStd/train",
-        prefix="train"
+        save_dir="Datasets/FilteredDatasets/MeanStd/train"
     )
 
     save_filtered_dataset(
         filtered_events_MeanStd_test,
-        save_dir="Datasets/FilteredDatasets/MeanStd/test",
-        prefix="test"
+        save_dir="Datasets/FilteredDatasets/MeanStd/test"
     )
 
     write_filtering_results_to_file("Mean-StdDev Thresholding", average_ERR_MeanStd, time_MeanStd)
@@ -292,14 +283,12 @@ if __name__ == "__main__":
     
     save_filtered_dataset(
         filtered_events_GlobalSaliencyCrop_train,
-        save_dir="Datasets/FilteredDatasets/GlobalSaliencyBasedCropping/train",
-        prefix="train"
+        save_dir="Datasets/FilteredDatasets/GlobalSaliencyBasedCropping/train"
     )
 
     save_filtered_dataset(
         filtered_events_GlobalSaliencyCrop_test,
-        save_dir="Datasets/FilteredDatasets/GlobalSaliencyBasedCropping/test",
-        prefix="test"
+        save_dir="Datasets/FilteredDatasets/GlobalSaliencyBasedCropping/test"
     )
 
     write_filtering_results_to_file("Global Saliency Based Cropping", average_ERR_GlobalSaliencyCrop, time_GlobalSaliencyCrop)
@@ -337,14 +326,12 @@ if __name__ == "__main__":
     
     save_filtered_dataset(
         filtered_events_Denoised_train,
-        save_dir="Datasets/FilteredDatasets/Denoise/train",
-        prefix="train"
+        save_dir="Datasets/FilteredDatasets/Denoise/train"
     )
 
     save_filtered_dataset(
         filtered_events_Denoised_test,
-        save_dir="Datasets/FilteredDatasets/Denoise/test",
-        prefix="test"
+        save_dir="Datasets/FilteredDatasets/Denoise/test"
     )
     
     write_filtering_results_to_file("Denoising Filtering", average_ERR_Denoised, time_Denoised) 
@@ -385,14 +372,12 @@ if __name__ == "__main__":
 
     save_filtered_dataset(
         filtered_events_RandomCrop_train,
-        save_dir="Datasets/FilteredDatasets/RandomCrop/train",
-        prefix="train"
+        save_dir="Datasets/FilteredDatasets/RandomCrop/train"
     )
 
     save_filtered_dataset(
         filtered_events_RandomCrop_test,
-        save_dir="Datasets/FilteredDatasets/RandomCrop/test",
-        prefix="test"
+        save_dir="Datasets/FilteredDatasets/RandomCrop/test"
     )
     
     write_filtering_results_to_file("Random Crop Filtering", average_ERR_RandomCrop, time_RandomCrop)

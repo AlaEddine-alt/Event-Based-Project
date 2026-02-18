@@ -10,3 +10,19 @@ Training + evaluation time: 275.56 seconds
 ComplexCNN - Raw
 Test Accuracy: 71.29%
 Training + evaluation time: 274.74 seconds
+--------------------------------
+ComplexCNN - OMS
+Test Accuracy: 37.32%
+Training + evaluation time: 181.82 seconds
+--------------------------------
+ComplexCNN - Raw
+Test Accuracy: 72.73%
+Training + evaluation time: 195.03 seconds
+--------------------------------
+ComplexCNN - OMS
+Test Accuracy: 34.93%
+Training + evaluation time: 175.38 seconds
+--------------------------------
+ComplexCNN - Attention
+Test Accuracy: 65.55%
+Training + evaluation time: 210.96 seconds

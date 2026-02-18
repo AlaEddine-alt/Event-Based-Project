@@ -125,37 +125,47 @@ class AttentionFiltering:
     # --------------------------------------------------
     def Attention_visualization(self, saliency_map):
 
+        print("Event dtype:", self.window_pos.dtype)
+        print("Event min:", self.window_pos.min())
+        print("Event max:", self.window_pos.max())
+        print("Event non-zero:", np.count_nonzero(self.window_pos))
+
         scaled_height = int(self.max_y * self.scale_factor)
         scaled_width = int(self.max_x * self.scale_factor)
 
-        background = np.ones((scaled_height, scaled_width * 3, 3), dtype=np.uint8) * 255
+        background = np.ones((scaled_height, scaled_width * 2, 3), dtype=np.uint8) * 255
 
+        # Event map (come OMS)
         event_img = convert_to_rgb(
-            cv2.resize(self.window_pos, (scaled_width, scaled_height))
+            cv2.resize(self.window_pos,
+                    (scaled_width, scaled_height),
+                    interpolation=cv2.INTER_NEAREST)
         )
+
+        # Normalize saliency safely
+        saliency_8bit = cv2.normalize(
+            saliency_map,
+            None,
+            0,
+            255,
+            cv2.NORM_MINMAX
+        ).astype(np.uint8)
 
         saliency_img = convert_to_rgb(
-            cv2.resize((saliency_map * 255).astype(np.uint8),
-                       (scaled_width, scaled_height))
-        )
-
-        graph_img = cv2.resize(
-            draw_graph_with_dots(self.events_list,
-                                 self.suppressed_list,
-                                 self.dropped_list),
-            (scaled_width, scaled_height)
+            cv2.resize(saliency_8bit,
+                    (scaled_width, scaled_height),
+                    interpolation=cv2.INTER_NEAREST)
         )
 
         background[:, :scaled_width] = event_img
-        background[:, scaled_width:scaled_width * 2] = saliency_img
-        background[:, scaled_width * 2:] = graph_img
+        background[:, scaled_width:] = saliency_img
 
         cv2.putText(background, 'Event Map', (30, 70),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0, 255, 0), 2)
 
-        cv2.putText(background, 'Attention Saliency', (scaled_width + 30, 70),
+        cv2.putText(background, 'Attention', (scaled_width + 30, 70),
                     cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0, 255, 0), 2)
 
-        cv2.imshow("Attention Filtering", background)
+        cv2.imshow("Attention Visualization", background)
         cv2.waitKey(0)
         cv2.destroyAllWindows()

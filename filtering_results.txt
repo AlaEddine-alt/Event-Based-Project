@@ -26,3 +26,27 @@ Filtering time: 16.03 seconds
 Global Saliency Based Cropping
 Average Filtering Error (ERR): 0.0001
 Filtering time: 2048.11 seconds
+--------------------------------
+OMS Filtering
+Average Filtering Error (ERR): 0.9404
+Filtering time: 0.74 seconds
+--------------------------------
+OMS Filtering
+Average Filtering Error (ERR): 0.9404
+Filtering time: 0.74 seconds
+--------------------------------
+OMS Filtering
+Average Filtering Error (ERR): 0.9404
+Filtering time: 0.78 seconds
+--------------------------------
+OMS Filtering
+Average Filtering Error (ERR): 0.9404
+Filtering time: 0.73 seconds
+--------------------------------
+OMS Filtering
+Average Filtering Error (ERR): 0.9200
+Filtering time: 722.27 seconds
+--------------------------------
+Attention Filtering
+Average Filtering Error (ERR): 0.2838
+Filtering time: 1490.27 seconds

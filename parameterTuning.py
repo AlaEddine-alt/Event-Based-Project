@@ -1,8 +1,8 @@
 import os
 import time
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
-from functions.saveAndLoadFilteredData import FilteredNPZDataset, save_filtered_dataset
+from functions.saveAndLoadFilteredData import FilteredNPYDataset, save_filtered_dataset
 from functions.loadDatasetFunctions import DVSGestureNPYDataset
 from Classification.ComplexCNN import train_model
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
@@ -200,11 +200,11 @@ def GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, use_p
 def evaluate_parameters(kp, filtered_root = "FilterTuning"):
 
     if(filtered_root == "FilteredGlobalSaliencyPercentileTuning"):
-        train_dataset = FilteredNPZDataset(f"{filtered_root}/Percentile_{kp}/train")
-        test_dataset  = FilteredNPZDataset(f"{filtered_root}/Percentile_{kp}/test")
+        train_dataset = FilteredNPYDataset(f"Datasets/{filtered_root}/Percentile_{kp}/train")
+        test_dataset  = FilteredNPYDataset(f"Datasets/{filtered_root}/Percentile_{kp}/test")
     else:
-        train_dataset = FilteredNPZDataset(f"{filtered_root}/Threshold_{kp}/train")
-        test_dataset  = FilteredNPZDataset(f"{filtered_root}/Threshold_{kp}/test")
+        train_dataset = FilteredNPYDataset(f"Datasets/{filtered_root}/Threshold_{kp}/train")
+        test_dataset  = FilteredNPYDataset(f"Datasets/{filtered_root}/Threshold_{kp}/test")
 
     acc, train_time = train_model(train_dataset, test_dataset)
 
@@ -217,39 +217,41 @@ def parameter_tuning_pipeline(parameters, train_dataset_raw, test_dataset_raw, t
     for i in range(len(parameters)):
 
         param = parameters[i]
+        # in this prt we have to change the average_err to adapt to each method
         if tecnique == "OMS":
             print(f"\nEvaluating OMS Filtering with keep percentage: {param}%")
-            average_ERR_OMS, time_OMS = OMS_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, filtered_root)   
+            average_ERR, time = OMS_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, filtered_root)   
         elif tecnique == "Goal Oriented Thresholding":
             print(f"\nEvaluating Goal Oriented Thresholding with keep percentage: {param}%")
-            average_ERR_GoalOriented, time_GoalOriented = GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, threshold_OMS, filtered_root)
+            average_ERR, time = GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, threshold_OMS, filtered_root)
         elif tecnique == "Mean Standard Deviation":
             print(f"\nEvaluating Mean Standard Deviation Thresholding with k_sigma: {param}")
-            average_ERR_GoalOriented, time_GoalOriented = MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, threshold_OMS, filtered_root)
+            average_ERR, time = MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, param, threshold_OMS, filtered_root)
         elif tecnique == "Global Saliency Crop use percentile":
             print(f"\nEvaluating Global Saliency Crop with percentile: {param}%")
-            average_ERR_GoalOriented, time_GoalOriented = GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, True, param, threshold_OMS, filtered_root)
+            average_ERR, time = GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, True, param, threshold_OMS, filtered_root)
         elif tecnique == "Global Saliency Crop not use percentile":
             print(f"\nEvaluating Global Saliency Crop with threshold: {param}")
-            average_ERR_GoalOriented, time_GoalOriented = GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, False, param, threshold_OMS, filtered_root)
+            average_ERR, time = GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, False, param, threshold_OMS, filtered_root)
         else :
             raise ValueError("Invalid technique specified.")
         acc, train_time = evaluate_parameters(param, filtered_root)
         results[i] = {
             "threshold": param,
-            "ERR": average_ERR_GoalOriented,
-            "time Goal Oriented Filtering": time_GoalOriented,
+            # this brings an error when running OMS, we don't have this variable
+            "ERR": average_ERR,
+            "time Goal Oriented Filtering": time,
             "accuracy": acc,
             "time": train_time
         }
         print(f"[Threshold {param}%] Accuracy: {acc:.2f}% | Time: {train_time:.1f}s")
 
-        write_parameter_tuning_results_to_file(tecnique, param, average_ERR_GoalOriented, time_GoalOriented, acc, train_time)
+        write_parameter_tuning_results_to_file(tecnique, param, average_ERR, time, acc, train_time)
 
     return results
 
 def plot_threshold_vs_accuracy(results, parameters):
-    accuracies = [results[k]["accuracy"] for k in parameters]
+    accuracies = [results[k]["accuracy"] for k in range(len(parameters))]
 
     plt.figure(figsize=(7,5))
     plt.plot(parameters, accuracies, "o-", linewidth=2)
@@ -265,11 +267,11 @@ if __name__ == "__main__":
     # ---- DVSGesture Dataset -----
     print("Loading downsampled DVSGesture dataset...")
 
-    training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTrain"
-    testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTest"
+    #training_ROOT = "/home/neuromorph/Desktop/PER_Vitale/Event-Based-Project/Datasets/DVSGesture/ibmGestureTrain"
+    #testing_ROOT = "/home/neuromorph/Desktop/PER_Vitale/Event-Based-Project/Datasets/DVSGesture/ibmGestureTest"
 
-    #training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTrain"
-    #testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTest"
+    training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/DVSGesture/ibmGestureTrain"
+    testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/DVSGesture/ibmGestureTest"
 
     training_users = sorted(os.listdir(training_ROOT))
     test_users = sorted(os.listdir(testing_ROOT))
@@ -279,8 +281,11 @@ if __name__ == "__main__":
 
     # Parameter tuning for OMS 
     # comment next two lines to tune other parameters
-    parameters_OMS = [0.10, 0.15, 0.20, 0.25, 0.30]
+    #parameters_OMS = [0.01, 0.05, 0.10, 0.15, 0.20, 0.25]
+    parameters_OMS = [0.01]
     results_OMS = parameter_tuning_pipeline(parameters_OMS, train_dataset_raw, test_dataset_raw, tecnique="OMS", filtered_root="FilteredOMS")
+    
+    plot_threshold_vs_accuracy(results_OMS, parameters_OMS)
 
     # Execute the rest after fine tuning of OMS
     """
@@ -309,7 +314,6 @@ if __name__ == "__main__":
     plot_threshold_vs_accuracy(results_GlobalSaliency_threshold, parameters_thresholds_GlobalSaliency)
 
     """
-
 
 
 

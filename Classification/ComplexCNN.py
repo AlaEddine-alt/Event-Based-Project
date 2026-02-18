@@ -198,6 +198,7 @@ class DVSGestureCNN(nn.Module):
 # ------------------------
 class ModelTrainer:
     def __init__(self, model, device='cuda' if torch.cuda.is_available() else 'cpu', stability_window=5):
+        torch.cuda.empty_cache()
         self.model = model.to(device)
         self.device = device
         self.criterion = nn.CrossEntropyLoss()
@@ -320,8 +321,8 @@ def train_model(dataset_training, dataset_testing):
     
     #converter = EventFrameConverter(height=128, width=128)
     #converter = StackedFrameConverter(128, 128, num_frames=5)
-    converter = TimeSurfaceConverter(128, 128, tau=50000)
-    #converter = VoxelGridConverter(128, 128, num_bins=5)
+    #converter = TimeSurfaceConverter(128, 128, tau=50000)
+    converter = VoxelGridConverter(128, 128, num_bins=5)
     
     dummy_event = {'x': np.array([0]), 'y': np.array([0]), 't': np.array([0]), 'p': np.array([1])}
     num_channels = converter.convert(dummy_event).shape[0]

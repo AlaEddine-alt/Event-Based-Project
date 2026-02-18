@@ -19,6 +19,7 @@ class Config:
     MAX_X = RESOLUTION[0]
     MAX_Y = RESOLUTION[1]
     UPDATE_INTERVAL = 0.001  # seconds
+    torch.cuda.empty_cache()
     DEVICE = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
 
     OMS_PARAMS = {
@@ -175,13 +176,6 @@ class OMSFiltering:
         # Scale components
         scaled_height = int(self.max_y * self.scale_factor)
         scaled_width = int(self.max_x * self.scale_factor)
-
-        background = np.ones((scaled_height, scaled_width*3, 3), dtype=np.uint8) * 255
-
-        window_pos_resized = convert_to_rgb(cv2.resize(self.window_pos, (scaled_width, scaled_height)))
-        OMS_resized = convert_to_rgb(cv2.resize(OMS_map, (scaled_width, scaled_height)))
-        graph_img_resized = cv2.resize(draw_graph_with_dots(self.events_list, self.suppressed_list, self.dropped_list),
-                                    (scaled_width, scaled_height))
         
         # We will now add the filtered map to the visualization
         
@@ -189,21 +183,17 @@ class OMSFiltering:
         I_filtered_resized = convert_to_rgb(cv2.resize(I_filtered_8bit, (scaled_width, scaled_height)))
         
         # The 'background' image needs to be wider to fit the 4th image (Event, OMS, Filtered, Graph)
-        background = np.ones((scaled_height, scaled_width*4, 3), dtype=np.uint8) * 255
+        background = np.ones((scaled_height, scaled_width*3, 3), dtype=np.uint8) * 255
 
         # Original window_pos
         window_pos_resized = convert_to_rgb(cv2.resize(self.window_pos, (scaled_width, scaled_height)))
         # OMS map
         OMS_resized = convert_to_rgb(cv2.resize(OMS_map, (scaled_width, scaled_height)))
-        # Graph
-        graph_img_resized = cv2.resize(draw_graph_with_dots(self.events_list, self.suppressed_list, self.dropped_list),
-                                    (scaled_width, scaled_height))
 
     # Place images into the wide background
         background[:, :scaled_width] = window_pos_resized
         background[:, scaled_width:scaled_width*2] = OMS_resized
         background[:, scaled_width*2:scaled_width*3] = I_filtered_resized  # NEW FILTERED MAP
-        background[:, scaled_width*3:] = graph_img_resized
 
         # Update Text Labels
         cv2.putText(background, 'Event map', (30, 70), cv2.FONT_HERSHEY_SIMPLEX, 1.8, (0,255,0), 2)
