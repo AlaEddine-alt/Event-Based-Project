@@ -27,21 +27,25 @@ if __name__ == "__main__":
     #training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTrain"
     #testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTest"
 
-    training_users = sorted(os.listdir(training_ROOT))
-    test_users = sorted(os.listdir(testing_ROOT))
+    #training_users = sorted(os.listdir(training_ROOT))
+    #test_users = sorted(os.listdir(testing_ROOT))
 
-    train_dataset_raw = DVSGestureNPYDataset(training_ROOT, users=training_users)
-    test_dataset_raw = DVSGestureNPYDataset(testing_ROOT, users=test_users)
+    #train_dataset_raw = DVSGestureNPYDataset(training_ROOT, users=training_users)
+    #test_dataset_raw = DVSGestureNPYDataset(testing_ROOT, users=test_users)
 
     scale_factor = 3
+
+    train_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(save_to = "../Datasets", train=True)
+    test_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(save_to = "../Datasets", train=False)
+    #events, label = dataset[sample_idx]
     
-    """
+    
     # --- OMS Filtering ---
     
     filtered_events_OMS_train = []
     filtered_events_OMS_test = []
     Err_list_OMS = []
-    threshold_OMS = 0.3 
+    threshold_OMS = 0.1
     
     start_time_OMS = time.time()
     for event, label in train_dataset_raw:
@@ -78,8 +82,7 @@ if __name__ == "__main__":
 
     write_filtering_results_to_file("OMS Filtering", average_ERR_OMS, time_OMS)
     
-    # Best Test Accuracy: 37.32%
-    """
+    
     # --- Attention Filtering ---
     
     filtered_events_Attention_train = []
