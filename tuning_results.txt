@@ -267,6 +267,7 @@ Training time: 16.09 seconds
 ------------------------------- corrected cnn + dataset
 
 comparison metric: (filtered accurancy / original accurancy) / (1 - ERR)
+Original accurancy: 79.17
 
 --------------------------------
 OMS - Parameter: 0.1
@@ -274,73 +275,85 @@ Average Event Reduction Ratio (ERR): 0.1806
 Filtering time: 1198.67 seconds
 Test Accuracy: 78.03%
 Training time: 13.10 seconds
-comparison metric: (78.03 / original accurancy) / (1 - ERR)
+comparison metric: (78.03 / 79.17) / (1 - 0.1806) =  1.203
 --------------------------------
 OMS - Parameter: 0.15
 Average Event Reduction Ratio (ERR): 0.2270
 Filtering time: 1189.20 seconds
 Test Accuracy: 72.35%
 Training time: 12.03 seconds
+comparison metric: (72.35 / 79.17) / (1 - 0.2270) =  1.182
 --------------------------------
 OMS - Parameter: 0.2
 Average Event Reduction Ratio (ERR): 0.2742
 Filtering time: 1184.13 seconds
 Test Accuracy: 78.41%
 Training time: 12.31 seconds
+
+comparison metric: (78.41 / 79.17) / (1 - 0.2742) = 1.365
 --------------------------------
 OMS - Parameter: 0.25
 Average Event Reduction Ratio (ERR): 0.3243
 Filtering time: 1164.51 seconds
 Test Accuracy: 75.76%
 Training time: 12.15 seconds
+comparison metric: (75.76 / 79.17) / (1 - 0.3243) = 1.416
 --------------------------------
 OMS - Parameter: 0.3
 Average Event Reduction Ratio (ERR): 0.3785
 Filtering time: 1157.18 seconds
 Test Accuracy: 76.14%
 Training time: 12.21 seconds
+comparison metric: (76.14 / 79.17) / (1 - 0.3785) = 1.547
 --------------------------------
 Goal Oriented Thresholding - Parameter: 1
 Average Event Reduction Ratio (ERR): 0.8390
 Filtering time: 2757.77 seconds
 Test Accuracy: 49.24%
 Training time: 13.65 seconds
+comparison metric: (49.24 / 79.17) / (1 - 0.8390) = 3.863
 --------------------------------
 Goal Oriented Thresholding - Parameter: 2
 Average Event Reduction Ratio (ERR): 0.7304
 Filtering time: 2767.84 seconds
 Test Accuracy: 55.30%
 Training time: 12.30 seconds
+comparison metric: (55.30 / 79.17) / (1 - 0.7304) = 2.591
 --------------------------------
 Goal Oriented Thresholding - Parameter: 5
 Average Event Reduction Ratio (ERR): 0.5301
 Filtering time: 2786.49 seconds
 Test Accuracy: 66.67%
 Training time: 12.45 seconds
+comparison metric: (66.67 / 79.17) / (1 - 0.5301) = 1.792
 --------------------------------
 Goal Oriented Thresholding - Parameter: 10
 Average Event Reduction Ratio (ERR): 0.3645
 Filtering time: 2803.81 seconds
 Test Accuracy: 73.11%
 Training time: 12.24 seconds
+comparison metric: (73.11 / 79.17) / (1 - 0.3645) = 1.453
 --------------------------------
 Goal Oriented Thresholding - Parameter: 20
 Average Event Reduction Ratio (ERR): 0.2178
 Filtering time: 2847.55 seconds
 Test Accuracy: 79.55%
 Training time: 12.51 seconds
+comparison metric: (79.55 / 79.17) / (1 - 0.2178) = 1.285
 --------------------------------
 Goal Oriented Thresholding - Parameter: 30
 Average Event Reduction Ratio (ERR): 0.1520
 Filtering time: 2846.03 seconds
 Test Accuracy: 80.68%
 Training time: 12.61 seconds
+comparison metric: (80.68 / 79.17) / (1 - 0.1520) = 1.202
 --------------------------------
 Goal Oriented Thresholding - Parameter: 40
 Average Event Reduction Ratio (ERR): 0.1204
 Filtering time: 2860.97 seconds
 Test Accuracy: 79.55%
 Training time: 12.52 seconds
+comparison metric: (79.55 / 79.17) / (1 - 0.1204) = 1.142
 --------------------------------
 Mean Standard Deviation - Parameter: 0.75
 Average Event Reduction Ratio (ERR): 0.2803
