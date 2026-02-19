@@ -118,3 +118,316 @@ Average Event Reduction Ratio (ERR): 0.5204
 Filtering time: 1374.89 seconds
 Test Accuracy: 63.16%
 Training time: 187.03 seconds
+
+--------------------------------
+
+new run with oms tuning 
+
+--------------------------------
+OMS - Parameter: 0.1
+Average Event Reduction Ratio (ERR): 0.8419
+Filtering time: 984.70 seconds
+Test Accuracy: 47.73%
+Training time: 172.76 seconds
+--------------------------------
+OMS - Parameter: 0.15
+Average Event Reduction Ratio (ERR): 0.8687
+Filtering time: 986.95 seconds
+Test Accuracy: 44.70%
+Training time: 168.90 seconds
+--------------------------------
+OMS - Parameter: 0.2
+Average Event Reduction Ratio (ERR): 0.8829
+Filtering time: 976.78 seconds
+Test Accuracy: 43.94%
+Training time: 172.73 seconds
+--------------------------------
+OMS - Parameter: 0.25
+Average Event Reduction Ratio (ERR): 0.8995
+Filtering time: 978.24 seconds
+Test Accuracy: 40.15%
+Training time: 173.72 seconds
+--------------------------------
+OMS - Parameter: 0.3
+Average Event Reduction Ratio (ERR): 0.9221
+Filtering time: 972.77 seconds
+Test Accuracy: 38.26%
+Training time: 167.74 seconds
+--------------------------------
+OMS - Parameter: 0.1
+Average Event Reduction Ratio (ERR): 0.8419
+Filtering time: 1447.28 seconds
+Test Accuracy: 47.35%
+Training time: 237.20 seconds
+--------------------------------
+OMS - Parameter: 0.15
+Average Event Reduction Ratio (ERR): 0.8687
+Filtering time: 1430.62 seconds
+Test Accuracy: 44.70%
+Training time: 240.46 seconds
+--------------------------------
+OMS - Parameter: 0.2
+Average Event Reduction Ratio (ERR): 0.8829
+Filtering time: 1423.53 seconds
+Test Accuracy: 46.59%
+Training time: 241.65 seconds
+--------------------------------
+OMS - Parameter: 0.25
+Average Event Reduction Ratio (ERR): 0.8995
+Filtering time: 1438.28 seconds
+Test Accuracy: 44.32%
+Training time: 244.32 seconds
+--------------------------------
+OMS - Parameter: 0.1
+Average Event Reduction Ratio (ERR): 0.8419
+Filtering time: 1029.91 seconds
+Test Accuracy: 48.48%
+Training time: 15.63 seconds
+--------------------------------
+OMS - Parameter: 0.1
+Average Event Reduction Ratio (ERR): 0.8419
+Filtering time: 973.42 seconds
+Test Accuracy: 46.59%
+Training time: 15.05 seconds
+--------------------------------
+OMS - Parameter: 0.15
+Average Event Reduction Ratio (ERR): 0.8687
+Filtering time: 958.41 seconds
+Test Accuracy: 44.32%
+Training time: 13.60 seconds
+--------------------------------
+OMS - Parameter: 0.2
+Average Event Reduction Ratio (ERR): 0.8829
+Filtering time: 944.83 seconds
+Test Accuracy: 48.11%
+Training time: 13.49 seconds
+--------------------------------
+OMS - Parameter: 0.25
+Average Event Reduction Ratio (ERR): 0.8995
+Filtering time: 950.74 seconds
+Test Accuracy: 43.56%
+Training time: 13.66 seconds
+--------------------------------
+OMS - Parameter: 0.01
+Average Event Reduction Ratio (ERR): 0.8338
+Filtering time: 996.89 seconds
+Test Accuracy: 48.48%
+Training time: 14.24 seconds
+--------------------------------
+OMS - Parameter: 0.05
+Average Event Reduction Ratio (ERR): 0.8338
+Filtering time: 994.87 seconds
+Test Accuracy: 50.38%
+Training time: 13.58 seconds
+--------------------------------
+OMS - Parameter: 0.1
+Average Event Reduction Ratio (ERR): 0.8419
+Filtering time: 994.05 seconds
+Test Accuracy: 46.97%
+Training time: 13.50 seconds
+--------------------------------
+OMS - Parameter: 0.15
+Average Event Reduction Ratio (ERR): 0.8687
+Filtering time: 973.99 seconds
+Test Accuracy: 45.83%
+Training time: 13.42 seconds
+--------------------------------
+OMS - Parameter: 0.2
+Average Event Reduction Ratio (ERR): 0.8829
+Filtering time: 971.76 seconds
+Test Accuracy: 43.18%
+Training time: 13.58 seconds
+--------------------------------
+OMS - Parameter: 0.25
+Average Event Reduction Ratio (ERR): 0.8995
+Filtering time: 960.77 seconds
+Test Accuracy: 41.29%
+Training time: 13.63 seconds
+--------------------------------
+OMS - Parameter: 0.3
+Average Event Reduction Ratio (ERR): 0.9221
+Filtering time: 959.68 seconds
+Test Accuracy: 37.12%
+Training time: 13.39 seconds
+--------------------------------
+OMS - Parameter: 0.01
+Average Event Reduction Ratio (ERR): 0.8338
+Filtering time: 1468.31 seconds
+Test Accuracy: 45.45%
+Training time: 27.04 seconds
+--------------------------------
+OMS - Parameter: 0.1
+Average Event Reduction Ratio (ERR): 0.1806
+Filtering time: 1132.45 seconds
+Test Accuracy: 81.82%
+Training time: 16.09 seconds
+
+
+
+------------------------------- corrected cnn + dataset
+
+comparison metric: (filtered accurancy / original accurancy) / (1 - ERR)
+
+--------------------------------
+OMS - Parameter: 0.1
+Average Event Reduction Ratio (ERR): 0.1806
+Filtering time: 1198.67 seconds
+Test Accuracy: 78.03%
+Training time: 13.10 seconds
+comparison metric: (78.03 / original accurancy) / (1 - ERR)
+--------------------------------
+OMS - Parameter: 0.15
+Average Event Reduction Ratio (ERR): 0.2270
+Filtering time: 1189.20 seconds
+Test Accuracy: 72.35%
+Training time: 12.03 seconds
+--------------------------------
+OMS - Parameter: 0.2
+Average Event Reduction Ratio (ERR): 0.2742
+Filtering time: 1184.13 seconds
+Test Accuracy: 78.41%
+Training time: 12.31 seconds
+--------------------------------
+OMS - Parameter: 0.25
+Average Event Reduction Ratio (ERR): 0.3243
+Filtering time: 1164.51 seconds
+Test Accuracy: 75.76%
+Training time: 12.15 seconds
+--------------------------------
+OMS - Parameter: 0.3
+Average Event Reduction Ratio (ERR): 0.3785
+Filtering time: 1157.18 seconds
+Test Accuracy: 76.14%
+Training time: 12.21 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 1
+Average Event Reduction Ratio (ERR): 0.8390
+Filtering time: 2757.77 seconds
+Test Accuracy: 49.24%
+Training time: 13.65 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 2
+Average Event Reduction Ratio (ERR): 0.7304
+Filtering time: 2767.84 seconds
+Test Accuracy: 55.30%
+Training time: 12.30 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 5
+Average Event Reduction Ratio (ERR): 0.5301
+Filtering time: 2786.49 seconds
+Test Accuracy: 66.67%
+Training time: 12.45 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 10
+Average Event Reduction Ratio (ERR): 0.3645
+Filtering time: 2803.81 seconds
+Test Accuracy: 73.11%
+Training time: 12.24 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 20
+Average Event Reduction Ratio (ERR): 0.2178
+Filtering time: 2847.55 seconds
+Test Accuracy: 79.55%
+Training time: 12.51 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 30
+Average Event Reduction Ratio (ERR): 0.1520
+Filtering time: 2846.03 seconds
+Test Accuracy: 80.68%
+Training time: 12.61 seconds
+--------------------------------
+Goal Oriented Thresholding - Parameter: 40
+Average Event Reduction Ratio (ERR): 0.1204
+Filtering time: 2860.97 seconds
+Test Accuracy: 79.55%
+Training time: 12.52 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 0.75
+Average Event Reduction Ratio (ERR): 0.2803
+Filtering time: 2092.68 seconds
+Test Accuracy: 77.65%
+Training time: 12.28 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 1.0
+Average Event Reduction Ratio (ERR): 0.3281
+Filtering time: 2063.38 seconds
+Test Accuracy: 74.62%
+Training time: 12.12 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 1.25
+Average Event Reduction Ratio (ERR): 0.3767
+Filtering time: 2058.77 seconds
+Test Accuracy: 74.62%
+Training time: 12.50 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 1.5
+Average Event Reduction Ratio (ERR): 0.4260
+Filtering time: 2058.92 seconds
+Test Accuracy: 73.11%
+Training time: 12.25 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 2.0
+Average Event Reduction Ratio (ERR): 0.5217
+Filtering time: 2004.57 seconds
+Test Accuracy: 68.56%
+Training time: 12.57 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 2.5
+Average Event Reduction Ratio (ERR): 0.6067
+Filtering time: 2009.11 seconds
+Test Accuracy: 62.12%
+Training time: 12.40 seconds
+--------------------------------
+Mean Standard Deviation - Parameter: 3.0
+Average Event Reduction Ratio (ERR): 0.6765
+Filtering time: 1977.91 seconds
+Test Accuracy: 56.44%
+Training time: 12.34 seconds
+--------------------------------
+Global Saliency Crop use percentile - Parameter: 85
+Average Event Reduction Ratio (ERR): 0.0913
+Filtering time: 2912.54 seconds
+Test Accuracy: 82.20%
+Training time: 171.79 seconds
+--------------------------------
+Global Saliency Crop use percentile - Parameter: 88
+Average Event Reduction Ratio (ERR): 0.1281
+Filtering time: 2475.92 seconds
+Test Accuracy: 79.55%
+Training time: 148.05 seconds
+--------------------------------
+Global Saliency Crop use percentile - Parameter: 90
+Average Event Reduction Ratio (ERR): 0.1620
+Filtering time: 2141.89 seconds
+Test Accuracy: 71.59%
+Training time: 150.49 seconds
+--------------------------------
+Global Saliency Crop use percentile - Parameter: 92
+Average Event Reduction Ratio (ERR): 0.2079
+Filtering time: 2157.32 seconds
+Test Accuracy: 77.65%
+Training time: 152.05 seconds
+--------------------------------
+Global Saliency Crop use percentile - Parameter: 95
+Average Event Reduction Ratio (ERR): 0.3092
+Filtering time: 2094.80 seconds
+Test Accuracy: 76.14%
+Training time: 150.46 seconds
+--------------------------------
+Global Saliency Crop not use percentile - Parameter: 0.15
+Average Event Reduction Ratio (ERR): 0.1430
+Filtering time: 2121.86 seconds
+Test Accuracy: 81.44%
+Training time: 154.47 seconds
+--------------------------------
+Global Saliency Crop not use percentile - Parameter: 0.2
+Average Event Reduction Ratio (ERR): 0.1745
+Filtering time: 2129.05 seconds
+Test Accuracy: 78.03%
+Training time: 152.83 seconds
+--------------------------------
+Global Saliency Crop not use percentile - Parameter: 0.25
+Average Event Reduction Ratio (ERR): 0.2080
+Filtering time: 2084.48 seconds
+Test Accuracy: 78.79%
+Training time: 144.97 seconds
