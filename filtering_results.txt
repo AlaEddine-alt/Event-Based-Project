@@ -50,3 +50,37 @@ Filtering time: 722.27 seconds
 Attention Filtering
 Average Filtering Error (ERR): 0.2838
 Filtering time: 1490.27 seconds
+
+----------------------------------------- last
+--------------------------------
+OMS Filtering
+Average Filtering Error (ERR): 0.2742
+Filtering time: 1166.01 seconds
+--------------------------------
+Attention Filtering
+Average Filtering Error (ERR): 0.2773
+Filtering time: 2374.94 seconds
+--------------------------------
+Adaptive Elbow Thresholding
+Average Filtering Error (ERR): 0.8053
+Filtering time: 2194.77 seconds
+--------------------------------
+Goal Oriented Thresholding
+Average Filtering Error (ERR): 0.1520
+Filtering time: 2849.37 seconds
+--------------------------------
+Mean-StdDev Thresholding
+Average Filtering Error (ERR): 0.2803
+Filtering time: 2084.99 seconds
+--------------------------------
+Global Saliency Based Cropping
+Average Filtering Error (ERR): 0.0913
+Filtering time: 2115.70 seconds
+--------------------------------
+Denoising Filtering
+Average Filtering Error (ERR): 0.3611
+Filtering time: 2458.87 seconds
+--------------------------------
+Random Crop Filtering
+Average Filtering Error (ERR): 0.5936
+Filtering time: 29.93 seconds
