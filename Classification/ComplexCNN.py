@@ -242,7 +242,7 @@ class ModelTrainer:
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
         best_acc, convergence_epoch = 0, None
         history = {'train_loss': [], 'train_acc': [], 'train_loss_std': [],
-                   'test_loss': [], 'test_acc': [], 'test_loss_std': []}
+                   'val_loss': [], 'val_acc': [], 'val_loss_std': []}
 
         for epoch in range(num_epochs):
             train_loss, train_acc, train_loss_std = self.train_epoch(train_loader, optimizer)
@@ -255,7 +255,7 @@ class ModelTrainer:
             history['val_acc'].append(val_acc)
             history['val_loss_std'].append(val_loss_std)
 
-            print(f"Epoch {epoch+1}/{num_epochs} | Train Acc: {train_acc:.2f}% | Test Acc: {val_acc:.2f}%")
+            print(f"Epoch {epoch+1}/{num_epochs} | Train Acc: {train_acc:.2f}% | Validation Acc: {val_acc:.2f}%")
 
             if val_acc > best_acc:
                 best_acc = val_acc
@@ -379,4 +379,4 @@ def train_model(dataset_training, dataset_testing):
     print(f"Final Test Loss: {test_loss:.4f}")
     print(f"Test Loss Std Dev: {test_loss_std:.4f}")
 
-    return best_accuracy, time_elapsed
+    return test_acc, time_elapsed

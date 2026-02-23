@@ -1,5 +1,6 @@
 import os
 import time
+import tonic
 import matplotlib.pyplot as plt
 
 from functions.saveAndLoadFilteredData import FilteredNPYDataset, save_filtered_dataset
@@ -42,14 +43,12 @@ def OMS_filtering_pipeline(train_dataset_raw, test_dataset_raw, threshold, filte
 
     save_filtered_dataset(
         filtered_events_OMS_train,
-        save_dir=f"Datasets/{filtering_root}/Threshold_{threshold}/train",
-        prefix="train"
+        save_dir=f"Datasets/{filtering_root}/Threshold_{threshold}/train"
     )
 
     save_filtered_dataset(
         filtered_events_OMS_test,
-        save_dir=f"Datasets/{filtering_root}/Threshold_{threshold}/test",
-        prefix="test"
+        save_dir=f"Datasets/{filtering_root}/Threshold_{threshold}/test"
     )
 
     return average_ERR_OMS, time_OMS
@@ -88,14 +87,12 @@ def GoalOriented_filtering_pipeline(train_dataset_raw, test_dataset_raw, keep_pe
 
     save_filtered_dataset(
         filtered_events_GoalOriented_train,
-        save_dir=f"Datasets/{filtering_root}/Threshold_{keep_percent}/train",
-        prefix="train"
+        save_dir=f"Datasets/{filtering_root}/Threshold_{keep_percent}/train"
     )
 
     save_filtered_dataset(
         filtered_events_GoalOriented_test,
-        save_dir=f"Datasets/{filtering_root}/Threshold_{keep_percent}/test",
-        prefix="test"
+        save_dir=f"Datasets/{filtering_root}/Threshold_{keep_percent}/test"
     )
 
     return average_ERR_GoalOriented, time_GoalOriented
@@ -131,14 +128,12 @@ def MeanStd_filtering_pipeline(train_dataset_raw, test_dataset_raw, k_sigma, thr
     
     save_filtered_dataset(
         filtered_events_MeanStd_train,
-        save_dir=f"Datasets/{filtering_root}/Threshold_{k_sigma}/train",
-        prefix="train"
+        save_dir=f"Datasets/{filtering_root}/Threshold_{k_sigma}/train"
     )
 
     save_filtered_dataset(
         filtered_events_MeanStd_test,
-        save_dir=f"Datasets/{filtering_root}/Threshold_{k_sigma}/test",
-        prefix="test"
+        save_dir=f"Datasets/{filtering_root}/Threshold_{k_sigma}/test"
     )
 
     return average_ERR_MeanStd, time_MeanStd
@@ -184,14 +179,12 @@ def GlobalSaliency_filtering_pipeline(train_dataset_raw, test_dataset_raw, use_p
 
     save_filtered_dataset(
         filtered_events_GlobalSaliencyCrop_train,
-        save_dir=save_dir_train,
-        prefix="train"
+        save_dir=save_dir_train
     )
 
     save_filtered_dataset(
         filtered_events_GlobalSaliencyCrop_test,
-        save_dir=save_dir_test,
-        prefix="test"
+        save_dir=save_dir_test
     )
 
     return average_ERR_GlobalSaliencyCrop, time_GlobalSaliencyCrop
@@ -238,7 +231,6 @@ def parameter_tuning_pipeline(parameters, train_dataset_raw, test_dataset_raw, t
         acc, train_time = evaluate_parameters(param, filtered_root)
         results[i] = {
             "threshold": param,
-            # this brings an error when running OMS, we don't have this variable
             "ERR": average_ERR,
             "time Goal Oriented Filtering": time,
             "accuracy": acc,
@@ -270,34 +262,36 @@ if __name__ == "__main__":
     #training_ROOT = "/home/neuromorph/Desktop/PER_Vitale/Event-Based-Project/Datasets/DVSGesture/ibmGestureTrain"
     #testing_ROOT = "/home/neuromorph/Desktop/PER_Vitale/Event-Based-Project/Datasets/DVSGesture/ibmGestureTest"
 
-    training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/DVSGesture/ibmGestureTrain"
-    testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/DVSGesture/ibmGestureTest"
+    #training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTrain"
+    #testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTest"
 
-    training_users = sorted(os.listdir(training_ROOT))
-    test_users = sorted(os.listdir(testing_ROOT))
+    #training_users = sorted(os.listdir(training_ROOT))
+    #test_users = sorted(os.listdir(testing_ROOT))
 
-    train_dataset_raw = DVSGestureNPYDataset(training_ROOT, users=training_users)
-    test_dataset_raw = DVSGestureNPYDataset(testing_ROOT, users=test_users)
+    #train_dataset_raw = DVSGestureNPYDataset(training_ROOT, users=training_users)
+    #test_dataset_raw = DVSGestureNPYDataset(testing_ROOT, users=test_users)
+
+    train_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(save_to = "../Datasets", train=True)
+    test_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(save_to = "../Datasets", train=False)
 
     # Parameter tuning for OMS 
     # comment next two lines to tune other parameters
-    #parameters_OMS = [0.01, 0.05, 0.10, 0.15, 0.20, 0.25]
-    parameters_OMS = [0.01]
-    results_OMS = parameter_tuning_pipeline(parameters_OMS, train_dataset_raw, test_dataset_raw, tecnique="OMS", filtered_root="FilteredOMS")
+    parameters_OMS = [0.10, 0.15, 0.20, 0.25, 0.3]
+    #results_OMS = parameter_tuning_pipeline(parameters_OMS, train_dataset_raw, test_dataset_raw, tecnique="OMS", filtered_root="FilteredOMS")
     
-    plot_threshold_vs_accuracy(results_OMS, parameters_OMS)
-
+    #plot_threshold_vs_accuracy(results_OMS, parameters_OMS)
+    
     # Execute the rest after fine tuning of OMS
-    """
-    threshold_OMS = 0.3 # put fine tuned value here !!!
+    
+    threshold_OMS = 0.2 # put fine tuned value here !!!
 
     # Parameter tuning for Goal Oriented Thresholding
     parameters_GoalOrientedThresholding = [1, 2, 5, 10, 20, 30, 40]
-    result_GoalOrientedThresholding = parameter_tuning_pipeline(parameters_GoalOrientedThresholding, train_dataset_raw, test_dataset_raw, tecnique="Goal Oriented Thresholding", filtered_root="FilteredGoalOrientedTuning", threshold_OMS=threshold_OMS)
+    #result_GoalOrientedThresholding = parameter_tuning_pipeline(parameters_GoalOrientedThresholding, train_dataset_raw, test_dataset_raw, tecnique="Goal Oriented Thresholding", filtered_root="FilteredGoalOrientedTuning", threshold_OMS=threshold_OMS)
     
     # Parameter tuning for Mean Standard Deviation Thresholding
     parameters_MeanStd = [0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0]
-    results_MeanStd = parameter_tuning_pipeline(parameters_MeanStd, train_dataset_raw, test_dataset_raw, tecnique="Mean Standard Deviation", filtered_root="FilteredMeanStdTuning", threshold_OMS=threshold_OMS)
+    #results_MeanStd = parameter_tuning_pipeline(parameters_MeanStd, train_dataset_raw, test_dataset_raw, tecnique="Mean Standard Deviation", filtered_root="FilteredMeanStdTuning", threshold_OMS=threshold_OMS)
 
     # Parameter tuning for Global Saliency-based Cropping
     parameters_percentile_GlobalSaliency = [85, 88, 90, 92, 95]
@@ -307,13 +301,14 @@ if __name__ == "__main__":
     
     results_GlobalSaliency_threshold = parameter_tuning_pipeline(parameters_thresholds_GlobalSaliency, train_dataset_raw, test_dataset_raw, tecnique="Global Saliency Crop not use percentile", filtered_root="FilteredGlobalSaliencyThresholdTuning", threshold_OMS=threshold_OMS)
     
-    plot_threshold_vs_accuracy(results_OMS, parameters_OMS)
-    plot_threshold_vs_accuracy(result_GoalOrientedThresholding, parameters_GoalOrientedThresholding)
-    plot_threshold_vs_accuracy(results_MeanStd, parameters_MeanStd)
+    #plot_threshold_vs_accuracy(results_OMS, parameters_OMS)
+    #plot_threshold_vs_accuracy(result_GoalOrientedThresholding, parameters_GoalOrientedThresholding)
+    #plot_threshold_vs_accuracy(results_MeanStd, parameters_MeanStd)
     plot_threshold_vs_accuracy(results_GlobalSaliency_percentile, parameters_percentile_GlobalSaliency)
     plot_threshold_vs_accuracy(results_GlobalSaliency_threshold, parameters_thresholds_GlobalSaliency)
 
-    """
+    
+
 
 
 

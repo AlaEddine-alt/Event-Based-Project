@@ -1,6 +1,7 @@
 
 import time
 import os
+import tonic 
 from Classification.ComplexCNN import train_model
 from functions.saveAndLoadFilteredData import FilteredNPYDataset
 from functions.loadDatasetFunctions import DVSGestureNPYDataset
@@ -24,22 +25,10 @@ When training, choose the filtered dataset you want to use
 # ---- DVSGesture Dataset -----
 print("Loading downsampled DVSGesture dataset...")
 
-# Downsapled dataset 
-training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTrain"
-testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTest"
-
-# Original dataset 
-# training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTrain"
-# testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTest"
-
-training_users = sorted(os.listdir(training_ROOT))
-test_users = sorted(os.listdir(testing_ROOT))
-
-
 # Training with raw downsampled dataset 
+train_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(save_to = "../Datasets", train=True)
+test_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(save_to = "../Datasets", train=False)
 
-train_dataset_raw = DVSGestureNPYDataset(training_ROOT, users=training_users)
-test_dataset_raw = DVSGestureNPYDataset(testing_ROOT, users=test_users)
 # time training is calculated inside the train_model function, to include also the evaluation time, doesn't include the time taken to load the dataset
 acc_raw, time_training_raw = train_model(train_dataset_raw, test_dataset_raw)
 print(f"\nTime taken for training the ComplexCNN model: {time_training_raw:.2f} seconds")

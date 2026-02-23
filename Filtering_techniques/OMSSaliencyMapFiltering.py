@@ -20,7 +20,7 @@ class Config:
     MAX_Y = RESOLUTION[1]
     UPDATE_INTERVAL = 0.001  # seconds
     torch.cuda.empty_cache()
-    DEVICE = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
+    DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     OMS_PARAMS = {
         'size_krn_center': 7,

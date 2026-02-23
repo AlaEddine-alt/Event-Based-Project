@@ -21,9 +21,6 @@ if __name__ == "__main__":
     # ---- DVSGesture Dataset -----
     print("Loading DVSGesture dataset...")
 
-    training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTrain"
-    testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTest"
-
     #training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTrain"
     #testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTest"
 
@@ -41,15 +38,16 @@ if __name__ == "__main__":
     
     
     # --- OMS Filtering ---
+
+    print("OMS filtering")
     
     filtered_events_OMS_train = []
     filtered_events_OMS_test = []
     Err_list_OMS = []
-    threshold_OMS = 0.1
+    threshold_OMS = 0.2 # tuned using max accurancy
     
     start_time_OMS = time.time()
     for event, label in train_dataset_raw:
-        print("processing event")
         # Initialize and run OMS Filtering
         OMSfilter = OMSFiltering(event, scale_factor, threshold_OMS)
         OMSMap, filtered_event_OMS, I_filtered, Err_OMS = OMSfilter.OMS_filtering()
@@ -84,6 +82,8 @@ if __name__ == "__main__":
     
     
     # --- Attention Filtering ---
+
+    print("Attention filtering")
     
     filtered_events_Attention_train = []
     filtered_events_Attention_test = []
@@ -125,6 +125,8 @@ if __name__ == "__main__":
     
     
     # --- Adaptive Elbow Thresholding ---
+
+    print("Adaptive Elbow Thresholding filtering")
     
     filtered_events_adaptiveElbow_train = []
     filtered_events_adaptiveElbow_test = []
@@ -168,11 +170,13 @@ if __name__ == "__main__":
     
     
     # --- Goal Oriented Thresholding ---
+
+    print("Goal Oriented Thresholding filtering")
     
     filtered_events_GoalOriented_train = []
     filtered_events_GoalOriented_test = []
     Err_list_GoalOriented = []
-    keep_percent = 5  # Keep top 5%
+    keep_percent = 30  # tuned using max accurancy
     
     start_time_GoalOriented = time.time()
     for event, label in train_dataset_raw:
@@ -211,11 +215,13 @@ if __name__ == "__main__":
     
 
     # --- Mean and Standard Deviation Thresholding ---
+
+    print("Mean and Standard Deviation Thresholding filtering")
     
     filtered_events_MeanStd_train = []
     filtered_events_MeanStd_test = []
     Err_list_MeanStd = []
-    k_sigma = 2.0  # Parameter for thresholding
+    k_sigma = 0.75 # tuned using max accurancy
     
     start_time_MeanStd = time.time()
     # Initialize and run Mean and Standard Deviation Thresholding
@@ -254,13 +260,15 @@ if __name__ == "__main__":
     
     
     # --- Global Saliency Based Cropping ---
+
+    print("Global Saliency Based Cropping filtering")
     
     filtered_events_GlobalSaliencyCrop_train = []
     filtered_events_GlobalSaliencyCrop_test = []
     Err_list_GlobalSaliencyCrop = []
     Use_percentile = True
-    percentile = 90
-    threshold = 0.4
+    percentile = 85 # tuned using max accurancy
+    threshold = 0.15
 
     start_time_GlobalSaliencyCrop = time.time()
     for event, label in train_dataset_raw:
@@ -296,8 +304,10 @@ if __name__ == "__main__":
 
     write_filtering_results_to_file("Global Saliency Based Cropping", average_ERR_GlobalSaliencyCrop, time_GlobalSaliencyCrop)
 
-    """
+    
     # --- Denoising Filtering ---
+
+    print("Denoising filtering")
     
     filtered_events_Denoised_train = []
     filtered_events_Denoised_test = []
@@ -338,9 +348,11 @@ if __name__ == "__main__":
     )
     
     write_filtering_results_to_file("Denoising Filtering", average_ERR_Denoised, time_Denoised) 
-    """
+
 
     # --- Random Cropping Filtering ---
+
+    print("Random Cropping filtering")
 
     filtered_events_RandomCrop_train = []
     filtered_events_RandomCrop_test = []
