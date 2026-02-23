@@ -6,6 +6,7 @@ import os
 import time
 import numpy as np
 from torch.utils.data import Dataset
+import tonic
 
 from functions.loadDatasetFunctions import DVSGestureNPYDataset
 from functions.saveAndLoadFilteredData import FilteredNPYDataset
@@ -132,6 +133,7 @@ class ResNet3D_Custom(nn.Module):
     def __init__(self, num_classes, in_channels=3):
         super(ResNet3D_Custom, self).__init__()
         
+        self.conv0 = nn.Conv2d(2, 3, kernel_size=1)  # Convert 2 channels to 3 for compatibility with Conv3D
         # Initial Stage: Conv1 (7x7) + MaxPool
         # Reduces spatial dim from 128 -> 32 while keeping temporal resolution
         self.conv1 = nn.Conv3d(in_channels, 64, kernel_size=(3, 7, 7), 
@@ -161,7 +163,12 @@ class ResNet3D_Custom(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        # Input shape: (Batch, Time, Channels, H, W) -> (B, 3, T, H, W)
+        # Input: (B, T, C, H, W) -> Change to (B, C, T, H, W) for Conv3D
+        B, T, C, H, W = x.shape
+        x = x.view(B * T, C, H, W)  # Merge batch and time for conv0
+        x = self.conv0(x)  # (B*T, 3, H, W)
+        x = x.view(B, T, 3, H, W)  # Reshape back to (B, T, C, H, W)
+        #print(f"Input shape: {x.shape}")
         x = x.transpose(1, 2)
         
         x = F.relu(self.bn1(self.conv1(x)))
@@ -352,7 +359,7 @@ def train_model(dataset_training, dataset_testing):
     test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
     # Build model
-    model = Custom3DCNN(num_classes=11)
+    model = ResNet3D_Custom(num_classes=11)
     trainer = ModelTrainer(model)
     start_time = time.time()
     best_accuracy = trainer.train(train_loader, test_loader, num_epochs=20, lr=0.001)
@@ -372,35 +379,24 @@ def train_model(dataset_training, dataset_testing):
 
 if __name__ == "__main__":
 
-    training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/FilteredDatasets/OMS/train"
-    testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/FilteredDatasets/OMS/test"
+    #train_dataset_raw = FilteredNPYDataset("Datasets/FilteredDatasets/Attention/train")
+    #test_dataset_raw = FilteredNPYDataset("Datasets/FilteredDatasets/Attention/test")
 
-    # Downsapled dataset 
-    #training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTrain"
-    #testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/DVSGestureDownsampled/ibmGestureTest"
-
-    training_users = sorted(os.listdir(training_ROOT))
-    test_users = sorted(os.listdir(testing_ROOT))
-
-
-    # Training with raw downsampled dataset 
-
-    #train_dataset_raw = DVSGestureNPYDataset(training_ROOT, users=training_users)
-    #test_dataset_raw = DVSGestureNPYDataset(testing_ROOT, users=test_users)
-
-    train_dataset_raw = FilteredNPYDataset("Datasets/FilteredDatasets/Attention/train")
-    test_dataset_raw = FilteredNPYDataset("Datasets/FilteredDatasets/Attention/test")
+    train_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(save_to = "../Datasets", train=True)
+    test_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(save_to = "../Datasets", train=False)
     
     acc_raw, time_training_raw = train_model(train_dataset_raw, test_dataset_raw)
     print(f"\nTime taken for training the ComplexCNN model: {time_training_raw:.2f} seconds")
     print(f"Best Test Accuracy: {acc_raw:.2f}%")
 
     """
-    Best Test Accuracy: 42.58%
-    Did not reach 95.0% accuracy
-    Training + evaluation time: 383.84 seconds
+    Custom 3D CNN Results:
+    Best Validation Accuracy: 48.86%
+    Training + evaluation time: 638.10 seconds
 
-    Time taken for training the ComplexCNN model: 383.84 seconds
-    Best Test Accuracy: 42.58%
+    ResNet3D_Custom Results:
+    Best Validation Accuracy: 83.33%
+    Training + evaluation time: 4481.31 seconds
+
     """
 

@@ -277,9 +277,7 @@ if __name__ == "__main__":
     # Parameter tuning for OMS 
     # comment next two lines to tune other parameters
     parameters_OMS = [0.10, 0.15, 0.20, 0.25, 0.3]
-    #results_OMS = parameter_tuning_pipeline(parameters_OMS, train_dataset_raw, test_dataset_raw, tecnique="OMS", filtered_root="FilteredOMS")
-    
-    #plot_threshold_vs_accuracy(results_OMS, parameters_OMS)
+    results_OMS = parameter_tuning_pipeline(parameters_OMS, train_dataset_raw, test_dataset_raw, tecnique="OMS", filtered_root="FilteredOMS")
     
     # Execute the rest after fine tuning of OMS
     
@@ -287,11 +285,11 @@ if __name__ == "__main__":
 
     # Parameter tuning for Goal Oriented Thresholding
     parameters_GoalOrientedThresholding = [1, 2, 5, 10, 20, 30, 40]
-    #result_GoalOrientedThresholding = parameter_tuning_pipeline(parameters_GoalOrientedThresholding, train_dataset_raw, test_dataset_raw, tecnique="Goal Oriented Thresholding", filtered_root="FilteredGoalOrientedTuning", threshold_OMS=threshold_OMS)
+    result_GoalOrientedThresholding = parameter_tuning_pipeline(parameters_GoalOrientedThresholding, train_dataset_raw, test_dataset_raw, tecnique="Goal Oriented Thresholding", filtered_root="FilteredGoalOrientedTuning", threshold_OMS=threshold_OMS)
     
     # Parameter tuning for Mean Standard Deviation Thresholding
     parameters_MeanStd = [0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0]
-    #results_MeanStd = parameter_tuning_pipeline(parameters_MeanStd, train_dataset_raw, test_dataset_raw, tecnique="Mean Standard Deviation", filtered_root="FilteredMeanStdTuning", threshold_OMS=threshold_OMS)
+    results_MeanStd = parameter_tuning_pipeline(parameters_MeanStd, train_dataset_raw, test_dataset_raw, tecnique="Mean Standard Deviation", filtered_root="FilteredMeanStdTuning", threshold_OMS=threshold_OMS)
 
     # Parameter tuning for Global Saliency-based Cropping
     parameters_percentile_GlobalSaliency = [85, 88, 90, 92, 95]
@@ -301,9 +299,9 @@ if __name__ == "__main__":
     
     results_GlobalSaliency_threshold = parameter_tuning_pipeline(parameters_thresholds_GlobalSaliency, train_dataset_raw, test_dataset_raw, tecnique="Global Saliency Crop not use percentile", filtered_root="FilteredGlobalSaliencyThresholdTuning", threshold_OMS=threshold_OMS)
     
-    #plot_threshold_vs_accuracy(results_OMS, parameters_OMS)
-    #plot_threshold_vs_accuracy(result_GoalOrientedThresholding, parameters_GoalOrientedThresholding)
-    #plot_threshold_vs_accuracy(results_MeanStd, parameters_MeanStd)
+    plot_threshold_vs_accuracy(results_OMS, parameters_OMS)
+    plot_threshold_vs_accuracy(result_GoalOrientedThresholding, parameters_GoalOrientedThresholding)
+    plot_threshold_vs_accuracy(results_MeanStd, parameters_MeanStd)
     plot_threshold_vs_accuracy(results_GlobalSaliency_percentile, parameters_percentile_GlobalSaliency)
     plot_threshold_vs_accuracy(results_GlobalSaliency_threshold, parameters_thresholds_GlobalSaliency)
 
