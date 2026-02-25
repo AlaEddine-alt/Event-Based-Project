@@ -6,56 +6,16 @@ import tonic
 import matplotlib.pyplot as plt
 
 from functions.OMS_helpers import *
-from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
 from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
 from functions.adaptFilteredData import tuple_events_to_event_dict
 
-
-# ---------------------------
-# Config
-# ---------------------------
-class Config:
-    RESOLUTION = [128, 128]  # Resolution of the DVS sensor
-    MAX_X = RESOLUTION[0]
-    MAX_Y = RESOLUTION[1]
-    DROP_RATE = 0  # Percentage of events to drop
-    UPDATE_INTERVAL = 0.001  # seconds
-    DEVICE = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-
-    OMS_PARAMS = {
-        'size_krn_center': 8,
-        'sigma_center': 1,
-        'size_krn_surround': 8,
-        'sigma_surround': 4,
-        'threshold': 0.03,
-        'tau_memOMS': 0.1,
-        'sc': 1,
-        'ss': 1
-    }
-
-    ATTENTION_PARAMS = {
-        'VM_radius': 8,  # (R0)
-        'VM_radius_group': 15,
-        'num_ori': 4,
-        'b_inh': 3,  # (w)
-        'g_inh': 1.0,
-        'w_sum': 0.5,
-        'vm_w': 0.2,  # (rho)
-        'vm_w2': 0.4,
-        'vm_w_group': 0.2,
-        'vm_w2_group': 0.4,
-        'random_init': False,
-        'lif_tau': 0.3
-    }
-
-
 # ----- Goal-Oriented OMS Thresholding -----
 
 class MaskGoalOrientedOMSFiltering:
 
-    def __init__(self, event, scale_factor):
+    def __init__(self, event, scale_factor, threshold_OMS):
         xs, ys, timestamps, pols = extract_single_event(event)
         window_pos, window_neg, max_x, max_y, numevs = reset_windows(xs, ys, pols)
         self.xs = xs
@@ -71,12 +31,11 @@ class MaskGoalOrientedOMSFiltering:
         self.events_list = [numevs[0]]
         self.suppressed_list = [numevs[0]]
         self.dropped_list = [0]
-        
-        self.config = Config()
+        self.threshold_OMS = threshold_OMS
 
         # OMS & Attention Initialization
 
-        OMS_filter = OMSFiltering(event, scale_factor)
+        OMS_filter = OMSFiltering(event, scale_factor, threshold_OMS)
         self.OMS_map, _, _, _ = OMS_filter.OMS_filtering()
 
     # Mask - goal oriented thresholding
@@ -86,13 +45,12 @@ class MaskGoalOrientedOMSFiltering:
         """
         # Flatten and compute percentile value
         thr = np.percentile(self.OMS_map, 100 - keep_percent)
-        # thr, keep_percent = adaptive_elbow_threshold(OMS_map)
 
         # Create mask: True for pixels we keep
         mask = self.OMS_map >= thr
 
-        print(f"[Thresholding] Keep top {keep_percent}% → threshold = {thr:.4f}")
-        print(f"[Thresholding] Pixels kept: {mask.sum()}  /  {mask.size}")
+        # print(f"[Thresholding] Keep top {keep_percent}% → threshold = {thr:.4f}")
+        # print(f"[Thresholding] Pixels kept: {mask.sum()}  /  {mask.size}")
 
         return mask, thr
 
@@ -108,7 +66,7 @@ class MaskGoalOrientedOMSFiltering:
         
         for x, y, t, p in zip(self.xs, self.ys, self.timestamps, self.pols):
             if 0 <= x < max_x_mask and 0 <= y < max_y_mask:
-                if masked_OMS[x, y] > 0:   # CORRETTO: [y, x]
+                if masked_OMS[y, x] > 0:
                     filtered_events.append((x, y, t, p))
 
         # print(f"Filtered events: {len(filtered_events)} (out of {len(self.xs)})")
@@ -121,7 +79,7 @@ class MaskGoalOrientedOMSFiltering:
     
     def GoalOriented_filtering_visualization(self, OMS_map, masked_OMS):
         
-        print("OMS map stats:", OMS_map.min(), OMS_map.max(), OMS_map.mean())
+        # print("OMS map stats:", OMS_map.min(), OMS_map.max(), OMS_map.mean())
 
         plt.figure(figsize=(6,4))
         plt.hist(OMS_map.flatten(), bins=100, color='gray')

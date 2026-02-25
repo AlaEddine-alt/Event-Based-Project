@@ -26,8 +26,12 @@ ENV/
 Datasets/
 DVSGestureDownsampled/
 FilteredDatasets/
+FilteredGoalOrientedTuning/
+FilteredGlobalSaliencyPercentileTuning/
+FilteredGlobalSaliencyThresholdTuning/
+FilteredMeanStdTuning/
 DVSGestureDownsampled.zip
-*.txt
+
 Dsec.txt
 middleDb.txt
 

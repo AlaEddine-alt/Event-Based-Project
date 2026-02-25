@@ -9,7 +9,7 @@ class DVSGestureNPYDataset(Dataset):
     def __init__(self, root_dir, users=None):
         self.samples = []
 
-        for user_folder in sorted(os.listdir(root_dir)):
+        for user_folder in os.listdir(root_dir):
             if users is not None and user_folder not in users:
                 continue
 

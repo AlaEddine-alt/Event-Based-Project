@@ -185,7 +185,9 @@ class AttentionModuleLevel(nn.Module):
                     self.temp_border = self.temp_border.max(self.temp_pyramid[o])
 
         for o, [b1, b2] in enumerate(zip(border_pyr1_3, border_pyr2_4)):
-            wta_mask = torch.tensor(self.temp_pyramid[o] == self.temp_border, requires_grad=False).float().to(device)
+            #wta_mask = torch.tensor(self.temp_pyramid[o] == self.temp_border, requires_grad=False).float().to(device)
+            wta_mask = (self.temp_pyramid[o] == self.temp_border).float().to(device)
+
 
             b1p = wta_mask * (b1 - b2)
             b1n = - b1p
@@ -267,7 +269,8 @@ class AttentionModule(nn.Module):
         y = torch.linspace(-1, 1, xout_size, device=device).view(-1, 1).repeat(1, yout_size)
         grid = torch.cat((x.unsqueeze(2), y.unsqueeze(2)), 2)
         grid = grid.unsqueeze_(0).repeat(inp.shape[0], 1, 1, 1)
-        return F.grid_sample(inp, grid)
+        return F.grid_sample(inp, grid, align_corners=True)
+
 
     def forward(self, inp):
         # Forward pass through the pyramid levels

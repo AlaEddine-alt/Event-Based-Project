@@ -6,6 +6,7 @@ import numpy as np
 import tonic
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.model_selection import train_test_split
 import time
 
 # ------------------------
@@ -59,7 +60,7 @@ class StackedFrameConverter:
     
 
 class TimeSurfaceConverter:
-    """Time surface: last event timestamp per pixel"""
+    # Time surface: last event timestamp per pixel
     def __init__(self, height=128, width=128, tau=50000):
         self.height = height
         self.width = width
@@ -77,7 +78,7 @@ class TimeSurfaceConverter:
         valid = (x >= 0) & (x < self.width) & (y >= 0) & (y < self.height)
         x, y, t, p = x[valid], y[valid], t[valid], p[valid]
 
-        # 🔥 FIX: force polarity into {0,1}
+        # force polarity into {0,1}
         p = (p > 0).astype(np.int32)
 
         surface = np.zeros((2, self.height, self.width), dtype=np.float32)
@@ -198,6 +199,7 @@ class DVSGestureCNN(nn.Module):
 # ------------------------
 class ModelTrainer:
     def __init__(self, model, device='cuda' if torch.cuda.is_available() else 'cpu', stability_window=5):
+        torch.cuda.empty_cache()
         self.model = model.to(device)
         self.device = device
         self.criterion = nn.CrossEntropyLoss()
@@ -235,33 +237,33 @@ class ModelTrainer:
                 correct += predicted.eq(labels).sum().item()
         return total_loss/len(test_loader), 100.*correct/total, np.std(batch_losses)
 
-    def train(self, train_loader, test_loader, num_epochs=50, lr=0.001, convergence_threshold=95.0):
+    def train(self, train_loader, validation_loader, num_epochs=50, lr=0.001, convergence_threshold=95.0):
         optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=15, gamma=0.1)
         best_acc, convergence_epoch = 0, None
         history = {'train_loss': [], 'train_acc': [], 'train_loss_std': [],
-                   'test_loss': [], 'test_acc': [], 'test_loss_std': []}
+                   'val_loss': [], 'val_acc': [], 'val_loss_std': []}
 
         for epoch in range(num_epochs):
             train_loss, train_acc, train_loss_std = self.train_epoch(train_loader, optimizer)
-            test_loss, test_acc, test_loss_std = self.evaluate(test_loader)
+            val_loss, val_acc, val_loss_std = self.evaluate(validation_loader)
             scheduler.step()
             history['train_loss'].append(train_loss)
             history['train_acc'].append(train_acc)
             history['train_loss_std'].append(train_loss_std)
-            history['test_loss'].append(test_loss)
-            history['test_acc'].append(test_acc)
-            history['test_loss_std'].append(test_loss_std)
+            history['val_loss'].append(val_loss)
+            history['val_acc'].append(val_acc)
+            history['val_loss_std'].append(val_loss_std)
 
-            print(f"Epoch {epoch+1}/{num_epochs} | Train Acc: {train_acc:.2f}% | Test Acc: {test_acc:.2f}%")
+            print(f"Epoch {epoch+1}/{num_epochs} | Train Acc: {train_acc:.2f}% | Validation Acc: {val_acc:.2f}%")
 
-            if test_acc > best_acc:
-                best_acc = test_acc
+            if val_acc > best_acc:
+                best_acc = val_acc
                 torch.save(self.model.state_dict(), 'best_model.pth')
-            if convergence_epoch is None and test_acc >= convergence_threshold:
+            if convergence_epoch is None and val_acc >= convergence_threshold:
                 convergence_epoch = epoch + 1
 
-        print(f"Best Test Accuracy: {best_acc:.2f}%")
+        print(f"Best Validation Accuracy: {best_acc:.2f}%")
         if convergence_epoch: print(f"Converged at epoch {convergence_epoch}")
         else: print(f"Did not reach {convergence_threshold}% accuracy")
         return best_acc
@@ -285,6 +287,20 @@ class ModelTrainer:
         disp.plot(ax=ax, cmap="Blues", xticks_rotation=45)
         plt.show()
 
+
+def compute_sparsity(dataloader, device='cuda' if torch.cuda.is_available() else 'cpu'):
+    total_elements = 0
+    total_nonzero = 0
+    
+    for data, _ in dataloader:
+        data = data.to(device)
+        
+        total_elements += data.numel()
+        total_nonzero += torch.count_nonzero(data).item()
+    
+    sparsity = 1 - (total_nonzero / total_elements)
+    return sparsity
+
 # ------------------------
 # Main Execution
 # ------------------------
@@ -301,13 +317,21 @@ def train_model(dataset_training, dataset_testing):
 
     train_events, train_labels = extract_events(dataset_training)
     test_events, test_labels = extract_events(dataset_testing)
+    
+
+    train_events, validation_events, train_labels, validation_labels = train_test_split(
+        train_events, train_labels,
+        test_size=0.2,      # 20% validation
+        random_state=42    # per riproducibilità
+    )
+
 
     # Choose converter
     
     #converter = EventFrameConverter(height=128, width=128)
     #converter = StackedFrameConverter(128, 128, num_frames=5)
-    converter = TimeSurfaceConverter(128, 128, tau=50000)
-    #converter = VoxelGridConverter(128, 128, num_bins=5)
+    #converter = TimeSurfaceConverter(128, 128, tau=50000)
+    converter = VoxelGridConverter(128, 128, num_bins=5)
     
     dummy_event = {'x': np.array([0]), 'y': np.array([0]), 't': np.array([0]), 'p': np.array([1])}
     num_channels = converter.convert(dummy_event).shape[0]
@@ -316,14 +340,17 @@ def train_model(dataset_training, dataset_testing):
     # Prepare datasets & loaders
     train_dataset = DVSGestureDataset(train_events, train_labels, converter, precompute=True)
     test_dataset = DVSGestureDataset(test_events, test_labels, converter, precompute=True)
+    validation_dataset = DVSGestureDataset(validation_events, validation_labels, converter, precompute=True)
+
     train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    validation_loader = DataLoader(validation_dataset, batch_size=32, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
     # Build model
     model = DVSGestureCNN(num_input_channels=num_channels, num_classes=11)
     trainer = ModelTrainer(model)
     start_time = time.time()
-    best_accuracy = trainer.train(train_loader, test_loader, num_epochs=20, lr=0.001)
+    best_accuracy = trainer.train(train_loader, validation_loader, num_epochs=20, lr=0.001)
     end_time = time.time()
     time_elapsed = end_time - start_time
     print(f"Training + evaluation time: {time_elapsed:.2f} seconds")
@@ -332,6 +359,24 @@ def train_model(dataset_training, dataset_testing):
     class_names = ["Hand Clapping", "Right Hand Wave", "Left Hand Wave",
                    "Right Arm CW", "Right Arm CCW", "Left Arm CW", "Left Arm CCW",
                    "Arm Roll", "Air Drums", "Air Guitar", "Other"]
-    trainer.plot_confusion_matrix(test_loader, class_names)
+    # trainer.plot_confusion_matrix(test_loader, class_names)
 
-    return best_accuracy, time_elapsed
+    print("Computing sparsity...")
+
+    train_sparsity = compute_sparsity(train_loader)
+    test_sparsity = compute_sparsity(test_loader)
+
+    print(f"Train Sparsity: {train_sparsity*100:.2f}%")
+    print(f"Test Sparsity: {test_sparsity*100:.2f}%")
+
+    # Final Test Inference
+    print("Loading best model for final test evaluation...")
+    model.load_state_dict(torch.load('best_model.pth'))
+
+    test_loss, test_acc, test_loss_std = trainer.evaluate(test_loader)
+
+    print(f"\nFinal Test Accuracy: {test_acc:.2f}%")
+    print(f"Final Test Loss: {test_loss:.4f}")
+    print(f"Test Loss Std Dev: {test_loss_std:.4f}")
+
+    return test_acc, time_elapsed

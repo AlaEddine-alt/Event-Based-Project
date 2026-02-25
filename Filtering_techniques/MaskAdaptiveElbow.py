@@ -6,53 +6,14 @@ import tonic
 import matplotlib.pyplot as plt
 
 from functions.OMS_helpers import *
-from functions.attention_helpers import AttentionModule
 from functions.visualizationFunctions import draw_graph_with_dots, convert_to_rgb
 from functions.loadDatasetFunctions import extract_single_event, reset_windows
 from Filtering_techniques.OMSSaliencyMapFiltering import OMSFiltering
 from functions.adaptFilteredData import tuple_events_to_event_dict
 
-# ---------------------------
-# Config
-# ---------------------------
-class Config:
-    RESOLUTION = [128, 128]  # Resolution of the DVS sensor
-    MAX_X = RESOLUTION[0]
-    MAX_Y = RESOLUTION[1]
-    DROP_RATE = 0  # Percentage of events to drop
-    UPDATE_INTERVAL = 0.001  # seconds
-    DEVICE = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
-
-    OMS_PARAMS = {
-        'size_krn_center': 8,
-        'sigma_center': 1,
-        'size_krn_surround': 8,
-        'sigma_surround': 4,
-        'threshold': 0.03,
-        'tau_memOMS': 0.1,
-        'sc': 1,
-        'ss': 1
-    }
-
-    ATTENTION_PARAMS = {
-        'VM_radius': 8,  # (R0)
-        'VM_radius_group': 15,
-        'num_ori': 4,
-        'b_inh': 3,  # (w)
-        'g_inh': 1.0,
-        'w_sum': 0.5,
-        'vm_w': 0.2,  # (rho)
-        'vm_w2': 0.4,
-        'vm_w_group': 0.2,
-        'vm_w2_group': 0.4,
-        'random_init': False,
-        'lif_tau': 0.3
-    }
-
-
 
 class AdaptiveElbowOMSFiltering:
-    def __init__(self, event, scale_factor):
+    def __init__(self, event, scale_factor, threshold_OMS):
         xs, ys, timestamps, pols = extract_single_event(event)
         window_pos, window_neg, max_x, max_y, numevs = reset_windows(xs, ys, pols)
         self.xs = xs
@@ -68,12 +29,11 @@ class AdaptiveElbowOMSFiltering:
         self.events_list = [numevs[0]]
         self.suppressed_list = [numevs[0]]
         self.dropped_list = [0]
-        
-        self.config = Config()
+        self.threshold_OMS = threshold_OMS
 
         # OMS & Attention Initialization
 
-        OMS_filter = OMSFiltering(event, scale_factor)
+        OMS_filter = OMSFiltering(event, scale_factor, threshold_OMS)
         self.OMS_map, _, _, _ = OMS_filter.OMS_filtering()
         
         # Adaptive Elbow Method for Thresholding
@@ -108,19 +68,29 @@ class AdaptiveElbowOMSFiltering:
         return threshold_value, keep_percent
 
     def Albowdaptive_thresholding(self):
-        
-        # ----- Adaptive Elbow Method Thresholding -----
-        mask, thr_value = self.adaptive_elbow_threshold()
 
-        # Optional: apply mask to visualize
+        threshold_value, keep_percent = self.adaptive_elbow_threshold()
+
+        # if only zeros and threshold is none
+        if threshold_value is None:
+            print("[AUTO] Too few OMS values → no filtering applied")
+            masked_OMS = self.OMS_map.copy()
+            ERR = 0.0
+            events_dict = tuple_events_to_event_dict(
+                list(zip(self.xs, self.ys, self.timestamps, self.pols))
+            )
+            return events_dict, masked_OMS, self.OMS_map, ERR
+
+        # build binary mask
+        mask = self.OMS_map >= threshold_value
         masked_OMS = self.OMS_map * mask
 
         filtered_events = []
         max_x_mask, max_y_mask = masked_OMS.shape
-        
+
         for x, y, t, p in zip(self.xs, self.ys, self.timestamps, self.pols):
             if 0 <= x < max_x_mask and 0 <= y < max_y_mask:
-                if masked_OMS[x, y] > 0:   # CORRETTO: [y, x]
+                if mask[x, y]:
                     filtered_events.append((x, y, t, p))
 
         ERR = 1.0 - (len(filtered_events) / len(self.xs))
@@ -129,8 +99,9 @@ class AdaptiveElbowOMSFiltering:
         print(f"Filtering ERR: {ERR:.4f}")
 
         events_dict = tuple_events_to_event_dict(filtered_events)
-        
+
         return events_dict, masked_OMS, self.OMS_map, ERR
+
 
     def AdaptiveElbow_filtering_visualization(self, OMS_map, masked_OMS):
         
