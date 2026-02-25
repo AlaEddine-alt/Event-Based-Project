@@ -21,21 +21,10 @@ if __name__ == "__main__":
     # ---- DVSGesture Dataset -----
     print("Loading DVSGesture dataset...")
 
-    #training_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTrain"
-    #testing_ROOT = "C:/Users/giuli/Desktop/Giulia/PER/Event-Based-Project/Datasets/ibmGestureTest"
-
-    #training_users = sorted(os.listdir(training_ROOT))
-    #test_users = sorted(os.listdir(testing_ROOT))
-
-    #train_dataset_raw = DVSGestureNPYDataset(training_ROOT, users=training_users)
-    #test_dataset_raw = DVSGestureNPYDataset(testing_ROOT, users=test_users)
-
     scale_factor = 3
 
     train_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(save_to = "../Datasets", train=True)
     test_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(save_to = "../Datasets", train=False)
-    #events, label = dataset[sample_idx]
-    
     
     # --- OMS Filtering ---
 
