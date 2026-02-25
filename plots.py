@@ -33,7 +33,7 @@ baseline_accuracy = 81.44
 x = np.arange(len(techniques))
 colors = plt.cm.tab10(np.linspace(0, 1, len(techniques)))
 
-plt.figure(figsize=(16, 7))
+plt.figure(figsize=(14, 7))
 
 offset_x = 0.10
 
