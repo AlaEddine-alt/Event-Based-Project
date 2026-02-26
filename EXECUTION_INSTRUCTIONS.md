@@ -99,6 +99,7 @@ Event-Based-Project/
 ├── classificationDVS.py             # Classification utilities
 ├── parameterTuning.py               # Parameter tuning script
 ├── plots.py                         # Plotting utilities
+├── demo.py                          # geenrate images to compare techniques
 │
 ├── Classification/                  # CNN models
 │   ├── ComplexCNN.py               # Complex CNN for classification
@@ -181,7 +182,43 @@ time OMS filtering = 324.53 seconds
 **Runtime:** Approximately 30-60 minutes depending on dataset size and hardware.
 
 
+### Generate Visual Comparison of Filtering Techniques
 
+Compare all 8 filtering techniques visually on individual samples:
+
+```powershell
+python demo.py
+```
+
+**What this script does:**
+1. Loads the DVS Gesture training dataset
+2. Processes the **first 100 samples** through all 8 filtering techniques in parallel
+3. For each sample, generates a comprehensive comparison visualization:
+   - **Left panel:** Raw event map (reference)
+   - **Right panel (2×4 grid):** All filtering techniques side-by-side
+     - OMS Filtering
+     - Attention Filtering
+     - Adaptive Elbow Thresholding
+     - Goal-Oriented Thresholding
+     - Mean and Standard Deviation Thresholding
+     - Global Saliency-Based Cropping
+     - Denoising
+     - Random Cropping
+4. Saves high-resolution comparison images to `ev_demo_results/` directory
+5. Displays performance metrics (ERR) for each technique
+
+**Output:** Individual PNG files for each sample showing side-by-side comparison
+
+**Example filename:** `ev_demo_results/sample_001.png`, `sample_002.png`, etc.
+
+**Runtime:** Approximately 10-20 minutes (faster than main script since it processes only 100 samples)
+
+**Use Case:** 
+- Quick visual inspection of how each filtering technique affects event data
+- Parameter tuning validation before running full dataset processing
+- Presentation and report generation
+
+---
 
 ### Option 4: Visualize Results
 
@@ -284,46 +321,4 @@ train_dataset_raw = tonic.datasets.dvsgesture.DVSGesture(
 )
 ```
 
-## Advanced Usage
 
-### Running Custom Filtering Chains
-
-Modify `main_DVSGesture.py` to enable/disable specific techniques:
-
-```python
-# Comment out techniques you don't need
-# filtered_events_OMS_train = []  # Disabled OMS filtering
-```
-
-### Integrating Custom Filtering
-
-Add new filtering technique in `Filtering_techniques/`:
-
-1. Create a new file: `Filtering_techniques/MyCustomFilter.py`
-2. Implement required methods following existing filter patterns
-3. Import in main script:
-```python
-from Filtering_techniques.MyCustomFilter import MyFilter
-```
-4. Add execution loop in main script
-
-
-## References
-
-- **Tonic Library:** https://github.com/neuromorphiccomputing/tonic
-- **DVS Gesture Dataset:** https://www.ibm.com/research/dvsgesture/
-- **PyTorch:** https://pytorch.org/
-
----
-
-## Support & Notes
-
-- All file paths are configured for Windows systems
-- Adjust paths accordingly for Linux/macOS
-- For detailed function documentation, see docstrings in individual modules
-- GPU acceleration is optional but recommended for large datasets
-
----
-
-**Last Updated:** February 2026
-**Project Status:** Active Development

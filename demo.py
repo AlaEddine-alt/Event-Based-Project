@@ -64,6 +64,29 @@ def visualize_all_techniques(results, raw_event_data, sample_idx, save_dir="ev_d
     # Create and display event map
     raw_display = None
     if raw_event_data is not None:
+        """ to obtain raw events map, not accumulation map
+        xs = raw_event_data['x'] if isinstance(raw_event_data['x'], np.ndarray) else np.array(raw_event_data['x'])
+        ys = raw_event_data['y'] if isinstance(raw_event_data['y'], np.ndarray) else np.array(raw_event_data['y'])
+        
+        if len(xs) > 0:
+            max_x = np.max(xs)
+            max_y = np.max(ys)
+            
+            # Full sensor size (128x128)
+            map_display = np.zeros((128, 128), dtype=np.uint8)
+            for x, y in zip(xs, ys):
+                if 0 <= int(x) < 128 and 0 <= int(y) < 128:
+                    map_display[int(y), int(x)] = min(255, map_display[int(y), int(x)] + 50)
+        else:
+            map_display = np.zeros((128, 128), dtype=np.uint8)
+
+        if map_display is not None:
+            # Convert to RGB for display
+            map_rgb = convert_to_rgb(map_display)
+            ax_event.imshow(map_rgb)
+        else:
+            ax_event.text(0.5, 0.5, 'No data', ha='center', va='center', transform=ax_event.transAxes)
+        """
         # Create event accumulation map
         raw_display = np.zeros((128, 128), dtype=np.float32)
         
@@ -95,13 +118,30 @@ def visualize_all_techniques(results, raw_event_data, sample_idx, save_dir="ev_d
             # Handle different data types
             if isinstance(map_data, dict):
                 # Event dictionary with keys like 'x', 'y', 't', 'p'
-                map_display = np.zeros((128, 128), dtype=np.uint8)
-                if 'x' in map_data and 'y' in map_data:
-                    xs = map_data['x'] if isinstance(map_data['x'], np.ndarray) else np.array(map_data['x'])
-                    ys = map_data['y'] if isinstance(map_data['y'], np.ndarray) else np.array(map_data['y'])
-                    for x, y in zip(xs, ys):
-                        if 0 <= int(x) < 128 and 0 <= int(y) < 128:
-                            map_display[int(y), int(x)] = min(255, map_display[int(y), int(x)] + 50)
+                # First, determine if this is a cropped event (64x64) or full sensor (128x128)
+                xs = map_data['x'] if isinstance(map_data['x'], np.ndarray) else np.array(map_data['x'])
+                ys = map_data['y'] if isinstance(map_data['y'], np.ndarray) else np.array(map_data['y'])
+                
+                if len(xs) > 0:
+                    max_x = np.max(xs)
+                    max_y = np.max(ys)
+                    # If max coordinates are around 64, it's a cropped event
+                    if max_x < 70 and max_y < 70:
+                        # Create 64x64 image for cropped events
+                        map_display = np.zeros((64, 64), dtype=np.uint8)
+                        for x, y in zip(xs, ys):
+                            if 0 <= int(x) < 64 and 0 <= int(y) < 64:
+                                map_display[int(y), int(x)] = min(255, map_display[int(y), int(x)] + 50)
+                        # Zoom to 128x128
+                        map_display = cv2.resize(map_display, (128, 128), interpolation=cv2.INTER_LINEAR)
+                    else:
+                        # Full sensor size (128x128)
+                        map_display = np.zeros((128, 128), dtype=np.uint8)
+                        for x, y in zip(xs, ys):
+                            if 0 <= int(x) < 128 and 0 <= int(y) < 128:
+                                map_display[int(y), int(x)] = min(255, map_display[int(y), int(x)] + 50)
+                else:
+                    map_display = np.zeros((128, 128), dtype=np.uint8)
             elif isinstance(map_data, (list, tuple)):
                 # List/tuple of events (x, y, t, p tuples)
                 map_display = np.zeros((128, 128), dtype=np.uint8)
@@ -120,10 +160,20 @@ def visualize_all_techniques(results, raw_event_data, sample_idx, save_dir="ev_d
             elif isinstance(map_data, np.ndarray):
                 # Numpy array - normalize and resize if necessary
                 map_display = map_data.copy()
+                
+                # Convert to uint8 if not already
                 if map_display.dtype != np.uint8:
-                    map_display = cv2.normalize(map_display, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-                # Resize to 128x128 if smaller (e.g., for cropped images)
+                    # Normalize to 0-255 if needed
+                    if map_display.max() > 1:
+                        # Already in range, just convert
+                        map_display = map_display.astype(np.uint8)
+                    else:
+                        # In 0-1 range, scale to 0-255
+                        map_display = (map_display * 255).astype(np.uint8)
+                
+                # Resize to 128x128 if smaller (e.g., for cropped images at 64x64)
                 if map_display.shape != (128, 128):
+                    # Use cv2.resize to zoom/stretch the image to fill the space
                     map_display = cv2.resize(map_display, (128, 128), interpolation=cv2.INTER_LINEAR)
             
             if map_display is not None:
@@ -168,7 +218,7 @@ if __name__ == "__main__":
     num_samples = min(100, len(train_dataset_raw))
     print(f"Processing first {num_samples} samples...\n")
     
-    for sample_idx in range(50, num_samples):
+    for sample_idx in range(num_samples):
         event, label = train_dataset_raw[sample_idx]
         
         print(f"Sample {sample_idx + 1}/{num_samples} - Label: {label}")
@@ -182,7 +232,7 @@ if __name__ == "__main__":
             OMSfilter = OMSFiltering(event, scale_factor, threshold_OMS)
             OMSMap, filtered_event_OMS, I_filtered, Err_OMS = OMSfilter.OMS_filtering()
             print(f"    OMS ERR: {Err_OMS:.4f}")
-            results['OMS Filtering'] = I_filtered
+            results['OMS Filtering'] = filtered_event_OMS  # Store the filtered events dictionary for visualization
             print(f"    ✓ OMS complete")
             
         except Exception as e:
@@ -195,7 +245,7 @@ if __name__ == "__main__":
             Attentionfilter = AttentionFiltering(event, scale_factor)
             filtered_event_Attention, saliency_map, Err_Attention = Attentionfilter.Attention_filtering()
             print(f"    Attention ERR: {Err_Attention:.4f}")
-            results['Attention Filtering'] = saliency_map
+            results['Attention Filtering'] = filtered_event_Attention  # Store the filtered events dictionary for visualization
             print(f"    ✓ Attention complete")
             
         except Exception as e:
@@ -206,9 +256,9 @@ if __name__ == "__main__":
             # --- Adaptive Elbow Thresholding ---
             print("  Applying Adaptive Elbow Thresholding...")
             AdaptiveElbowFilter = AdaptiveElbowOMSFiltering(event, scale_factor, threshold_OMS)
-            filtered_events, masked_OMS, OMSMap, Err_adElow = AdaptiveElbowFilter.Albowdaptive_thresholding()
+            filtered_events_adaptive, masked_adaptive, OMSMap, Err_adElow = AdaptiveElbowFilter.Albowdaptive_thresholding()
             print(f"    Adaptive Elbow ERR: {Err_adElow:.4f}")
-            results['Adaptive Elbow'] = masked_OMS
+            results['Adaptive Elbow'] = filtered_events_adaptive
             print(f"    ✓ Adaptive Elbow complete")
             
         except Exception as e:
@@ -219,9 +269,9 @@ if __name__ == "__main__":
             # --- Goal Oriented Thresholding ---
             print("  Applying Goal Oriented Thresholding...")
             GoalOrientedFilter = MaskGoalOrientedOMSFiltering(event, scale_factor, threshold_OMS)
-            filtered_events, masked_OMS, OMSMap, ERR_goal = GoalOrientedFilter.Goadaptive_thresholding(keep_percent)
+            filtered_events_goal, masked_goal, OMSMap, ERR_goal = GoalOrientedFilter.Goadaptive_thresholding(keep_percent)
             print(f"    Goal Oriented ERR: {ERR_goal:.4f}")
-            results['Goal Oriented'] = masked_OMS
+            results['Goal Oriented'] = filtered_events_goal
             print(f"    ✓ Goal Oriented complete")
             
         except Exception as e:
@@ -232,9 +282,9 @@ if __name__ == "__main__":
             # --- Mean and Standard Deviation Thresholding ---
             print("  Applying Mean and Standard Deviation Thresholding...")
             MeanStdFilter = MaskMeanStandardDeviation(event, scale_factor, threshold_OMS)
-            filtered_events, ERR_MStd = MeanStdFilter.Mean_std_thresholding(k_sigma)
+            filtered_events_meanSTD, ERR_MStd = MeanStdFilter.Mean_std_thresholding(k_sigma)
             print(f"    Mean-StdDev ERR: {ERR_MStd:.4f}")
-            results['Mean-Std Dev'] = filtered_events
+            results['Mean-Std Dev'] = filtered_events_meanSTD
             print(f"    ✓ Mean-StdDev complete")
             
         except Exception as e:
@@ -245,11 +295,11 @@ if __name__ == "__main__":
             # --- Global Saliency Based Cropping ---
             print("  Applying Global Saliency Based Cropping...")
             GlobalSaliencyCropper = MaskGlobalSaliencyBasedCropping(event, scale_factor, threshold_OMS)
-            filtered_events, OMS_norm, cropped_OMS_map, crop_box, ERR_global = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(
+            filtered_events_saliencyCrop, OMS_norm, saliency_cropped_map, crop_box, ERR_global = GlobalSaliencyCropper.MaskGlobalSaliency_filtering(
                 Use_percentile, percentile, threshold
             )
             print(f"    Global Saliency ERR: {ERR_global:.4f}")
-            results['Global Saliency'] = cropped_OMS_map
+            results['Global Saliency'] = filtered_events_saliencyCrop
             print(f"    ✓ Global Saliency complete")
             
         except Exception as e:
@@ -275,9 +325,8 @@ if __name__ == "__main__":
             RandomCrop_filtering = RandomCropFiltering(event, scale_factor, sensor_size, crop_size)
             events_cropped, ERR_crop = RandomCrop_filtering.RandomCrop_filtering(sensor_size, crop_size)
             print(f"    Random Crop ERR: {ERR_crop:.4f}")
-            # Convert cropped events to image using crop_size (not sensor_size)
-            cropped_image = RandomCrop_filtering.events_to_image(events_cropped, crop_size)
-            results['Random Crop'] = cropped_image
+            # Store the cropped events dictionary
+            results['Random Crop'] = events_cropped
             print(f"    ✓ Random Crop complete")
             
         except Exception as e:
