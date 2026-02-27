@@ -62,8 +62,8 @@ class AdaptiveElbowOMSFiltering:
         # threshold value
         threshold_value = flat_sorted[elbow_idx]
 
-        print(f"[AUTO] Elbow at index {elbow_idx}, keep ~{keep_percent:.2f}%")
-        print(f"[AUTO] Threshold value: {threshold_value:.5f}")
+        print(f"Elbow at index {elbow_idx}, keep ~{keep_percent:.2f}%")
+        print(f"Threshold value: {threshold_value:.5f}")
 
         return threshold_value, keep_percent
 
@@ -73,7 +73,7 @@ class AdaptiveElbowOMSFiltering:
 
         # if only zeros and threshold is none
         if threshold_value is None:
-            print("[AUTO] Too few OMS values → no filtering applied")
+            print("Too few OMS values → no filtering applied")
             masked_OMS = self.OMS_map.copy()
             ERR = 0.0
             events_dict = tuple_events_to_event_dict(

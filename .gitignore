@@ -32,6 +32,12 @@ FilteredGlobalSaliencyThresholdTuning/
 FilteredMeanStdTuning/
 DVSGestureDownsampled.zip
 
+#Images
+demo_results/
+new_demo_results/
+ev_demo_results/
+ev_demo_results.zip
+
 Dsec.txt
 middleDb.txt
 
